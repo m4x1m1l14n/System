@@ -3,3 +3,6 @@
 *.VC.opendb
 *.vcxproj.filters
 *.vcxproj.user
+/.vs/*
+/bin/*
+/obj/*
