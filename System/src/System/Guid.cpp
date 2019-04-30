@@ -1,6 +1,7 @@
 #include <System\Guid.hpp>
 
 #include <map>
+#include <regex>
 
 namespace m4x1m1l14n { namespace System
 {
@@ -28,7 +29,38 @@ namespace m4x1m1l14n { namespace System
 
 	Guid::Guid(const std::wstring & s)
 	{
-		
+		if (s.empty())
+		{
+			throw std::invalid_argument("input string cannot be empty");
+		}
+
+		const auto& pattern = LR"(^\s*[{(]?(?:0x)?([0-9a-fA-F]{8})(?:[-,]?(?:0x)?([0-9a-fA-F]{4}))(?:[-,]?(?:0x)?([0-9a-fA-F]{4}))[-,]?\{?(?:0x)?([0-9a-fA-F]{2})[,]?(?:0x)?([0-9a-fA-F]{2})[,-]?(?:0x)?([0-9a-fA-F]{2})(?:,\s?0x)?([0-9a-fA-F]{2})(?:,\s?0x)?([0-9a-fA-F]{2})(?:,\s?0x)?([0-9a-fA-F]{2})(?:,\s?0x)?([0-9a-fA-F]{2})(?:,\s?0x)?([0-9a-fA-F]{2}),?[)}]{0,2}\s*$)";
+
+		std::wsmatch matches;
+		std::wregex re(pattern);
+
+		if (std::regex_match(s, matches, re))
+		{
+			GUID guid;
+
+			guid.Data1 = _byteswap_ulong(std::stoul(matches[1].str(), nullptr, 16));
+			guid.Data2 = _byteswap_ushort(static_cast<unsigned short>(std::stoul(matches[2].str(), nullptr, 16)));
+			guid.Data3 = _byteswap_ushort(static_cast<unsigned short>(std::stoul(matches[3].str(), nullptr, 16)));
+			guid.Data4[0] = static_cast<unsigned char>(std::stoul(matches[4].str(), nullptr, 16));
+			guid.Data4[1] = static_cast<unsigned char>(std::stoul(matches[5].str(), nullptr, 16));
+			guid.Data4[2] = static_cast<unsigned char>(std::stoul(matches[6].str(), nullptr, 16));
+			guid.Data4[3] = static_cast<unsigned char>(std::stoul(matches[7].str(), nullptr, 16));
+			guid.Data4[4] = static_cast<unsigned char>(std::stoul(matches[8].str(), nullptr, 16));
+			guid.Data4[5] = static_cast<unsigned char>(std::stoul(matches[9].str(), nullptr, 16));
+			guid.Data4[6] = static_cast<unsigned char>(std::stoul(matches[10].str(), nullptr, 16));
+			guid.Data4[7] = static_cast<unsigned char>(std::stoul(matches[11].str(), nullptr, 16));
+
+			m_guid = guid;
+		}
+		else
+		{
+			throw std::invalid_argument("input string in wrong format");
+		}
 	}
 
 	Guid::Guid(const uint32_t a, const uint16_t b, const uint16_t c, const uint64_t d)
