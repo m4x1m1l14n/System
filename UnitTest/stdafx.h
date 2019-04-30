@@ -10,4 +10,6 @@
 // Headers for CppUnitTest
 #include "CppUnitTest.h"
 
-// TODO: reference additional headers your program requires here
+#include <System\Guid.hpp>
+
+using namespace m4x1m1l14n;
