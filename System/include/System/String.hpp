@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
 
 namespace m4x1m1l14n {
 	namespace System {
