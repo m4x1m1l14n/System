@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\System\Guid.hpp" />
+    <ClInclude Include="include\System\String.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\System\Guid.cpp" />
