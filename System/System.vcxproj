@@ -23,11 +23,13 @@
     <ClInclude Include="include\System\Guid.hpp" />
     <ClInclude Include="include\System\Net\HttpStatusCode.hpp" />
     <ClInclude Include="include\System\String.hpp" />
+    <ClInclude Include="include\System\Text\Encoding.hpp" />
     <ClInclude Include="include\System\Version.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\System\Diagnostics\FileVersionInfo.cpp" />
     <ClCompile Include="src\System\Guid.cpp" />
+    <ClCompile Include="src\System\Text\Encoding.cpp" />
     <ClCompile Include="src\System\Version.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
