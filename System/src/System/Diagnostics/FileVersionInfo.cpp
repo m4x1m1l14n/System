@@ -55,7 +55,7 @@ namespace System
 			}
 		}
 
-		::System::Version FileVersionInfo::GetFileVersion() const
+		System::Version FileVersionInfo::GetFileVersion() const
 		{
 			LPBYTE* lpBuffer = nullptr;
 			UINT uLen = 0;
@@ -67,7 +67,7 @@ namespace System
 					auto verInfo = reinterpret_cast<VS_FIXEDFILEINFO*>(lpBuffer);
 					if (verInfo->dwSignature == 0xfeef04bd)
 					{
-						return ::System::Version
+						return System::Version
 						(
 							(verInfo->dwFileVersionMS >> 16) & 0xffff,
 							(verInfo->dwFileVersionMS >> 0) & 0xffff,
@@ -82,7 +82,7 @@ namespace System
 				throw std::runtime_error("VerQueryValue() failed");
 			}
 
-			return ::System::Version();
+			return System::Version();
 		}
 
 		FileVersionInfo FileVersionInfo::GetVersionInfo(const std::wstring & fileName)

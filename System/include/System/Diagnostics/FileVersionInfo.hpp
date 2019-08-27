@@ -2,7 +2,7 @@
 
 #pragma comment(lib, "Version.lib")
 
-#include <System\Version.h>
+#include <System\Version.hpp>
 
 namespace System
 {
@@ -16,7 +16,7 @@ namespace System
 		public:
 			~FileVersionInfo();
 
-			::System::Version GetFileVersion() const;
+			System::Version GetFileVersion() const;
 
 			static FileVersionInfo GetVersionInfo(const std::wstring& fileName);
 
