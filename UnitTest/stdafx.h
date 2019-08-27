@@ -11,5 +11,3 @@
 #include "CppUnitTest.h"
 
 #include <System\Guid.hpp>
-
-using namespace m4x1m1l14n;

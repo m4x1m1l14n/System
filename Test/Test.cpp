@@ -4,8 +4,6 @@
 
 #include <System\Guid.hpp>
 
-using namespace m4x1m1l14n;
-
 int main()
 {
 	auto guid = System::Guid::NewGuid();
