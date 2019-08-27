@@ -38,61 +38,58 @@ unsigned char* _GetFileVersionInfo(const std::wstring& fileName)
 	}
 }
 
-namespace m4x1m1l14n
+namespace System
 {
-	namespace System
+	namespace Diagnostics
 	{
-		namespace Diagnostics
+		FileVersionInfo::FileVersionInfo(unsigned char* pFileVersionInfo)
+			: m_pFileVersionInfo(pFileVersionInfo)
 		{
-			FileVersionInfo::FileVersionInfo(unsigned char* pFileVersionInfo)
-				: m_pFileVersionInfo(pFileVersionInfo)
+		}
+
+		FileVersionInfo::~FileVersionInfo()
+		{
+			if (m_pFileVersionInfo)
 			{
+				::HeapFree(::GetProcessHeap(), 0, m_pFileVersionInfo);
 			}
+		}
 
-			FileVersionInfo::~FileVersionInfo()
+		::System::Version FileVersionInfo::GetFileVersion() const
+		{
+			LPBYTE* lpBuffer = nullptr;
+			UINT uLen = 0;
+
+			if (VerQueryValue(m_pFileVersionInfo, L"\\", reinterpret_cast<LPVOID*>(&lpBuffer), &uLen))
 			{
-				if (m_pFileVersionInfo)
+				if (uLen)
 				{
-					::HeapFree(::GetProcessHeap(), 0, m_pFileVersionInfo);
-				}
-			}
-
-			::System::Version FileVersionInfo::GetFileVersion() const
-			{
-				LPBYTE* lpBuffer = nullptr;
-				UINT uLen = 0;
-
-				if (VerQueryValue(m_pFileVersionInfo, L"\\", reinterpret_cast<LPVOID*>(&lpBuffer), &uLen))
-				{
-					if (uLen)
+					auto verInfo = reinterpret_cast<VS_FIXEDFILEINFO*>(lpBuffer);
+					if (verInfo->dwSignature == 0xfeef04bd)
 					{
-						auto verInfo = reinterpret_cast<VS_FIXEDFILEINFO*>(lpBuffer);
-						if (verInfo->dwSignature == 0xfeef04bd)
-						{
-							return ::System::Version
-							(
-								(verInfo->dwFileVersionMS >> 16) & 0xffff,
-								(verInfo->dwFileVersionMS >> 0) & 0xffff,
-								(verInfo->dwFileVersionLS >> 16) & 0xffff,
-								(verInfo->dwFileVersionLS >> 0) & 0xffff
-							);
-						}
+						return ::System::Version
+						(
+							(verInfo->dwFileVersionMS >> 16) & 0xffff,
+							(verInfo->dwFileVersionMS >> 0) & 0xffff,
+							(verInfo->dwFileVersionLS >> 16) & 0xffff,
+							(verInfo->dwFileVersionLS >> 0) & 0xffff
+						);
 					}
 				}
-				else
-				{
-					throw std::runtime_error("VerQueryValue() failed");
-				}
-
-				return ::System::Version();
 			}
-
-			FileVersionInfo FileVersionInfo::GetVersionInfo(const std::wstring & fileName)
+			else
 			{
-				auto pFileVersionInfo = _GetFileVersionInfo(fileName);
-
-				return FileVersionInfo(pFileVersionInfo);
+				throw std::runtime_error("VerQueryValue() failed");
 			}
+
+			return ::System::Version();
+		}
+
+		FileVersionInfo FileVersionInfo::GetVersionInfo(const std::wstring & fileName)
+		{
+			auto pFileVersionInfo = _GetFileVersionInfo(fileName);
+
+			return FileVersionInfo(pFileVersionInfo);
 		}
 	}
 }

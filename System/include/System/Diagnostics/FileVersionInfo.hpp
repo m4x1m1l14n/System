@@ -4,27 +4,24 @@
 
 #include <System\Version.h>
 
-namespace m4x1m1l14n
+namespace System
 {
-	namespace System
+	namespace Diagnostics
 	{
-		namespace Diagnostics
+		class FileVersionInfo
 		{
-			class FileVersionInfo
-			{
-			protected:
-				FileVersionInfo(unsigned char* pFileVersionInfo);
+		protected:
+			FileVersionInfo(unsigned char* pFileVersionInfo);
 
-			public:
-				~FileVersionInfo();
+		public:
+			~FileVersionInfo();
 
-				::System::Version GetFileVersion() const;
+			::System::Version GetFileVersion() const;
 
-				static FileVersionInfo GetVersionInfo(const std::wstring& fileName);
+			static FileVersionInfo GetVersionInfo(const std::wstring& fileName);
 
-			protected:
-				unsigned char* m_pFileVersionInfo;
-			};
-		}
+		protected:
+			unsigned char* m_pFileVersionInfo;
+		};
 	}
 }

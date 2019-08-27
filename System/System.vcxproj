@@ -19,10 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\System\Diagnostics\FileVersionInfo.hpp" />
     <ClInclude Include="include\System\Guid.hpp" />
+    <ClInclude Include="include\System\Net\HttpStatusCode.hpp" />
     <ClInclude Include="include\System\String.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\System\Diagnostics\FileVersionInfo.cpp" />
     <ClCompile Include="src\System\Guid.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

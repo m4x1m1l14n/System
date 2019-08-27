@@ -3,7 +3,7 @@
 #include <map>
 #include <regex>
 
-namespace m4x1m1l14n { namespace System
+namespace System
 {
 	Guid::Guid()
 	{
@@ -211,4 +211,4 @@ namespace m4x1m1l14n { namespace System
 			m_guid.Data4[7]
 		};
 	}
-}}
+}
