@@ -14,25 +14,25 @@ namespace System
 	{
 	}
 
-	Version::Version(int major)
+	Version::Version(unsigned int major)
 		: Version(major, 0)
 	{
 
 	}
 
-	Version::Version(int major, int minor)
+	Version::Version(unsigned int major, unsigned int minor)
 		: Version(major, minor, 0)
 	{
 
 	}
 
-	Version::Version(int major, int minor, int build)
+	Version::Version(unsigned int major, unsigned int minor, unsigned int build)
 		: Version(major, minor, build, 0)
 	{
 
 	}
 
-	Version::Version(int major, int minor, int build, int revision)
+	Version::Version(unsigned int major, unsigned int minor, unsigned int build, unsigned int revision)
 	{
 		_ver[_Ver_Major_Idx] = major;
 		_ver[_Ver_Minor_Idx] = minor;
@@ -44,7 +44,7 @@ namespace System
 	{
 		int r = swscanf_s(
 			ver.c_str(),
-			L"%d.%d.%d.%d",
+			L"%u.%u.%u.%u",
 			&_ver[_Ver_Major_Idx],
 			&_ver[_Ver_Minor_Idx],
 			&_ver[_Ver_Build_Idx],
@@ -66,7 +66,7 @@ namespace System
 	{
 		int r = sscanf_s(
 			ver.c_str(),
-			"%d.%d.%d.%d",
+			"%u.%u.%u.%u",
 			&_ver[_Ver_Major_Idx],
 			&_ver[_Ver_Minor_Idx],
 			&_ver[_Ver_Build_Idx],
@@ -99,27 +99,27 @@ namespace System
 			);
 	}
 
-	int Version::getMajor() const
+	unsigned int Version::getMajor() const
 	{
 		return _ver[_Ver_Major_Idx];
 	}
 
-	int Version::getMinor() const
+	unsigned int Version::getMinor() const
 	{
 		return _ver[_Ver_Minor_Idx];
 	}
 
-	int Version::getBuild() const
+	unsigned int Version::getBuild() const
 	{
 		return _ver[_Ver_Build_Idx];
 	}
 
-	int Version::getRevision() const
+	unsigned int Version::getRevision() const
 	{
 		return _ver[_Ver_Rev_Idx];
 	}
 
-	std::wstring Version::ToString(int n/* = 3*/) const
+	std::wstring Version::ToString(unsigned int n/* = 3*/) const
 	{
 		if (n > 4) { n = 4; }
 		if (n < 1) { n = 1; }
@@ -128,7 +128,7 @@ namespace System
 
 		ss << _ver[0];
 
-		for (int i = 1; i < n; ++i)
+		for (unsigned int i = 1; i < n; ++i)
 		{
 			ss << L'.' << _ver[i];
 		}

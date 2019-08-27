@@ -10,4 +10,7 @@
 // Headers for CppUnitTest
 #include "CppUnitTest.h"
 
+#include <vector>
+
 #include <System\Guid.hpp>
+#include <System\Version.hpp>
