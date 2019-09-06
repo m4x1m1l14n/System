@@ -174,6 +174,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="System.Drawing.Point.cpp" />
     <ClCompile Include="System.Guid.cpp" />
     <ClCompile Include="System.Version.cpp" />
   </ItemGroup>

@@ -14,3 +14,4 @@
 
 #include <System\Guid.hpp>
 #include <System\Version.hpp>
+#include <System\Drawing\Point.hpp>
