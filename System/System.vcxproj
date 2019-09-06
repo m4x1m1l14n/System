@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="include\System\Diagnostics\FileVersionInfo.hpp" />
     <ClInclude Include="include\System\Drawing\Point.hpp" />
+    <ClInclude Include="include\System\Drawing\Size.hpp" />
     <ClInclude Include="include\System\Guid.hpp" />
     <ClInclude Include="include\System\Net\HttpStatusCode.hpp" />
     <ClInclude Include="include\System\String.hpp" />
