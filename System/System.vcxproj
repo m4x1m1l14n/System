@@ -24,21 +24,29 @@
     <ClInclude Include="include\System\Drawing\Rect.hpp" />
     <ClInclude Include="include\System\Drawing\Size.hpp" />
     <ClInclude Include="include\System\Guid.hpp" />
+    <ClInclude Include="include\System\Math.hpp" />
     <ClInclude Include="include\System\Net\HttpStatusCode.hpp" />
     <ClInclude Include="include\System\String.hpp" />
     <ClInclude Include="include\System\Text\Encoding.hpp" />
     <ClInclude Include="include\System\Threading\AutoResetEvent.hpp" />
     <ClInclude Include="include\System\Threading\EventWaitHandle.hpp" />
     <ClInclude Include="include\System\Threading\ManualResetEvent.hpp" />
+    <ClInclude Include="include\System\Timeout.hpp" />
+    <ClInclude Include="include\System\TimeoutException.hpp" />
+    <ClInclude Include="include\System\TimeSpan.hpp" />
     <ClInclude Include="include\System\Version.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\System\Diagnostics\FileVersionInfo.cpp" />
     <ClCompile Include="src\System\Guid.cpp" />
+    <ClCompile Include="src\System\Math.cpp" />
     <ClCompile Include="src\System\Text\Encoding.cpp" />
     <ClCompile Include="src\System\Threading\AutoResetEvent.cpp" />
     <ClCompile Include="src\System\Threading\EventWaitHandle.cpp" />
     <ClCompile Include="src\System\Threading\ManualResetEvent.cpp" />
+    <ClCompile Include="src\System\Timeout.cpp" />
+    <ClCompile Include="src\System\TimeoutException.cpp" />
+    <ClCompile Include="src\System\TimeSpan.cpp" />
     <ClCompile Include="src\System\Version.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -117,7 +125,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>.\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -131,7 +139,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>.\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -147,7 +155,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>.\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -165,7 +173,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>.\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
