@@ -3,7 +3,7 @@
 #include <map>
 #include <regex>
 
-namespace m4x1m1l14n { namespace System
+namespace System
 {
 	Guid::Guid()
 	{
@@ -142,7 +142,7 @@ namespace m4x1m1l14n { namespace System
 
 			do
 			{
-				len = _snwprintf(buffer, len, iter->second.c_str(),
+				len = std::swprintf(buffer, len, iter->second.c_str(),
 					reinterpret_cast<const unsigned char*>(&m_guid.Data1)[3],
 					reinterpret_cast<const unsigned char*>(&m_guid.Data1)[2],
 					reinterpret_cast<const unsigned char*>(&m_guid.Data1)[1],
@@ -161,8 +161,10 @@ namespace m4x1m1l14n { namespace System
 					m_guid.Data4[7]
 				);
 
-				if (len && !buffer)
+				if ((len > 0) && !buffer)
 				{
+					++len;
+
 					buffer = new wchar_t[len];
 				}
 				else
@@ -174,7 +176,7 @@ namespace m4x1m1l14n { namespace System
 
 			std::wstring ret;
 
-			if (buffer && len)
+			if (buffer && (len > 0))
 			{
 				ret = std::wstring(buffer, len);
 
@@ -209,4 +211,4 @@ namespace m4x1m1l14n { namespace System
 			m_guid.Data4[7]
 		};
 	}
-}}
+}

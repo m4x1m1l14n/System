@@ -10,6 +10,9 @@
 // Headers for CppUnitTest
 #include "CppUnitTest.h"
 
-#include <System\Guid.hpp>
+#include <vector>
 
-using namespace m4x1m1l14n;
+#include <System\Guid.hpp>
+#include <System\Version.hpp>
+#include <System\Drawing\Point.hpp>
+#include <System\Drawing\Size.hpp>
