@@ -35,7 +35,7 @@ namespace System
 	{
 		const auto& duration = time.Duration();
 
-		return ElapseAfter(static_cast<unsigned long long>(duration.TotalMilliseconds));
+		return ElapseAfter(static_cast<unsigned long long>(duration.GetTotalMilliseconds()));
 	}
 
 	inline Timeout Timeout::CreateInfinite()
