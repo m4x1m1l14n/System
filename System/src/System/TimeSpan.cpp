@@ -1,13 +1,15 @@
-#include <System\TimeSpan.hpp>
+#include <System/TimeSpan.hpp>
 
+#include <cinttypes>
 #include <sstream>
 #include <iomanip>
+#include <limits>
 
-#define _MILLISECONDS(ms)	(ms * 10000i64)
-#define _SECONDS(s)			(s * _MILLISECONDS(1000))
-#define _MINUTES(m)			(m * _SECONDS(60))
-#define _HOURS(h)			(h * _MINUTES(60))
-#define _DAYS(d)			(d * _HOURS(24))
+#define _MILLISECONDS(ms)	((ms) * std::uint64_t{10000})
+#define _SECONDS(s)			((s) * _MILLISECONDS(1000))
+#define _MINUTES(m)			((m) * _SECONDS(60))
+#define _HOURS(h)			((h) * _MINUTES(60))
+#define _DAYS(d)			((d) * _HOURS(24))
 
 namespace System
 {
@@ -248,26 +250,26 @@ namespace System
 		return m_ticks <= rhs.m_ticks;
 	}
 
-	std::wstring TimeSpan::ToString(const std::wstring & /*format*/)
+	std::string TimeSpan::ToString(const std::string & /*format*/)
 	{
-		std::wostringstream ss;
+		std::ostringstream ss;
 
-		if (m_ticks < 0) { ss << L"-"; }
+		if (m_ticks < 0) { ss << "-"; }
 
 		auto days = GetDays();
 		if (days > 0)
 		{
-			ss << days << L".";
+			ss << days << ".";
 		}
 
-		ss	<< std::setw(2) << std::setfill(L'0') << Hours << L":"
-			<< std::setw(2) << std::setfill(L'0') << Minutes << L":"
-			<< std::setw(2) << std::setfill(L'0') << Seconds;
+		ss	<< std::setw(2) << std::setfill('0') << this->GetHours() << ":"
+			<< std::setw(2) << std::setfill('0') << this->GetMinutes() << ":"
+			<< std::setw(2) << std::setfill('0') << this->GetSeconds();
 
 		auto milliseconds = GetMilliseconds();
 		if (milliseconds > 0)
 		{
-			ss << L"." << std::setw(3) << std::setfill(L'0') << milliseconds;
+			ss << "." << std::setw(3) << std::setfill('0') << milliseconds;
 		}
 
 		return ss.str();
