@@ -41,6 +41,7 @@ namespace System
 		long long GetSeconds() const;
 		long long GetMilliseconds() const;
 
+#if defined(_WIN32) && 0
 		__declspec(property(get = GetDays)) long long Days;
 		__declspec(property(get = GetTotalDays)) double TotalDays;
 		__declspec(property(get = GetHours)) long long Hours;
@@ -52,6 +53,7 @@ namespace System
 		__declspec(property(get = GetMilliseconds)) long long Milliseconds;
 		__declspec(property(get = GetTotalMilliseconds)) double TotalMilliseconds;
 		__declspec(property(get = GetTicks)) long long Ticks;
+#endif
 
 		TimeSpan Add(const TimeSpan& span) const;
 		TimeSpan Subtract(const TimeSpan& span) const;
@@ -86,7 +88,7 @@ namespace System
 		bool operator< (const TimeSpan& rhs) const;
 		bool operator<= (const TimeSpan& rhs) const;
 
-		std::wstring ToString(const std::wstring& format = L"c");
+		std::string ToString(const std::string& format = "c");
 
 	private:
 		long long m_ticks;
