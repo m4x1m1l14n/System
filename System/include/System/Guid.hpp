@@ -2,8 +2,6 @@
 
 #pragma comment(lib, "Ole32.lib")
 
-#include <objbase.h>
-
 #include <memory>
 #include <string>
 #include <array>
@@ -14,23 +12,23 @@ namespace System
 	{
 	public:
 		Guid();
-		Guid(const GUID& guid);
 		Guid(const std::array<unsigned char, 16>& arr);
-		Guid(const std::wstring& s);
+		Guid(const std::string& s);
 		Guid(const uint32_t a, const uint16_t b, const uint16_t c, const uint64_t d);
 
 		virtual ~Guid();
 
 		bool operator ==(const Guid& rhs) const;
 		bool operator !=(const Guid& rhs) const;
+		operator bool() const;
 
 		static Guid NewGuid();
 
 		bool IsEmpty() const;
-		std::wstring ToString(const std::wstring& format = std::wstring()) const;
-		std::array<unsigned char, 16> ToByteArray() const;
+		std::string ToString(const std::string& format = std::string()) const;
+		std::array<unsigned char, 16> ToArray() const;
 
 	protected:
-		GUID m_guid;
+		std::array<unsigned char, 16> m_data;
 	};
 }
