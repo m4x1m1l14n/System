@@ -1,8 +1,10 @@
 #pragma once
 
+#ifdef _WIN32
+
 #pragma comment(lib, "Version.lib")
 
-#include <System\Version.hpp>
+#include <System/Version.hpp>
 
 namespace System
 {
@@ -25,3 +27,5 @@ namespace System
 		};
 	}
 }
+
+#endif // !_WIN32

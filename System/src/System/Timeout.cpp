@@ -1,11 +1,23 @@
-#include <System\Timeout.hpp>
+#include <System/Timeout.hpp>
 
-#include <System\TimeoutException.hpp>
+#include <System/TimeoutException.hpp>
 
-#include <Windows.h>
+#include <chrono>
 
 namespace System
 {
+	namespace details
+	{
+		inline std::uint64_t current_time_ms()
+		{
+			return static_cast<std::uint64_t>(
+				std::chrono::time_point_cast<std::chrono::milliseconds>(
+					std::chrono::system_clock::now()
+				).time_since_epoch().count()
+			);
+		}
+	}
+
 	const Timeout Timeout::Infinite = Timeout::CreateInfinite();
 	const Timeout Timeout::Zero = Timeout::CreateZero();
 
@@ -28,7 +40,7 @@ namespace System
 
 	Timeout Timeout::ElapseAfter(unsigned long long milliseconds)
 	{
-		return Timeout(::GetTickCount64() + milliseconds);
+		return Timeout(details::current_time_ms() + milliseconds);
 	}
 
 	Timeout Timeout::ElapseAfter(const TimeSpan & time)
@@ -62,9 +74,9 @@ namespace System
 
 	bool Timeout::GetIsElapsed() const
 	{
-		return IsInfinite 
+		return this->GetIsInfinite()
 			? false
-			: ::GetTickCount64() > m_time;
+			: details::current_time_ms() > m_time;
 	}
 
 	void Timeout::ThrowIfElapsed() const

@@ -1,4 +1,6 @@
-#include <System\Diagnostics\FileVersionInfo.hpp>
+#include <System/Diagnostics/FileVersionInfo.hpp>
+
+#ifdef _WIN32
 
 #include <Windows.h>
 
@@ -93,3 +95,5 @@ namespace System
 		}
 	}
 }
+
+#endif // !_WIN32

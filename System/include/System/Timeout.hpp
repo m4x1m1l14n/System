@@ -1,6 +1,6 @@
 #pragma once
 
-#include <System\TimeSpan.hpp>
+#include <System/TimeSpan.hpp>
 
 namespace System
 {
@@ -28,9 +28,6 @@ namespace System
 
 		bool GetIsElapsed() const;
 		bool GetIsInfinite() const;
-
-		__declspec(property(get = GetIsElapsed)) bool IsElapsed;
-		__declspec(property(get = GetIsInfinite)) bool IsInfinite;
 
 		void ThrowIfElapsed() const;
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef _WIN32
+
 #include <string>
 
 namespace System
@@ -16,3 +18,5 @@ namespace System
 		};
 	}
 }
+
+#endif // !_WIN32

@@ -1,4 +1,4 @@
-#include <System\Version.hpp>
+#include <System/Version.hpp>
 
 #include <sstream>
 
@@ -12,6 +12,7 @@ namespace System
 	Version::Version()
 		: Version(0)
 	{
+
 	}
 
 	Version::Version(unsigned int major)
@@ -40,30 +41,9 @@ namespace System
 		_ver[_Ver_Rev_Idx] = revision;
 	}
 
-	Version::Version(const std::wstring& ver)
-	{
-		int r = swscanf_s(
-			ver.c_str(),
-			L"%u.%u.%u.%u",
-			&_ver[_Ver_Major_Idx],
-			&_ver[_Ver_Minor_Idx],
-			&_ver[_Ver_Build_Idx],
-			&_ver[_Ver_Rev_Idx]
-		);
-
-		if (r < 0) { r = 0; }
-
-		if (r < 4)
-		{
-			for (int i = 3; i >= r; --i)
-			{
-				_ver[i] = 0;
-			}
-		}
-	}
-
 	Version::Version(const std::string& ver)
 	{
+#ifdef _WIN32
 		int r = sscanf_s(
 			ver.c_str(),
 			"%u.%u.%u.%u",
@@ -72,6 +52,16 @@ namespace System
 			&_ver[_Ver_Build_Idx],
 			&_ver[_Ver_Rev_Idx]
 		);
+#else
+		int r = sscanf(
+			ver.c_str(),
+			"%u.%u.%u.%u",
+			&_ver[_Ver_Major_Idx],
+			&_ver[_Ver_Minor_Idx],
+			&_ver[_Ver_Build_Idx],
+			&_ver[_Ver_Rev_Idx]
+		);
+#endif // !_WIN32
 
 		if (r < 0) { r = 0; }
 
@@ -119,12 +109,12 @@ namespace System
 		return _ver[_Ver_Rev_Idx];
 	}
 
-	std::wstring Version::ToString(unsigned int n/* = 3*/) const
+	std::string Version::ToString(unsigned int n/* = 3*/) const
 	{
 		if (n > 4) { n = 4; }
 		if (n < 1) { n = 1; }
 
-		std::wostringstream ss;
+		std::ostringstream ss;
 
 		ss << _ver[0];
 
