@@ -120,7 +120,7 @@ namespace System
 
 		for (unsigned int i = 1; i < n; ++i)
 		{
-			ss << L'.' << _ver[i];
+			ss << '.' << _ver[i];
 		}
 
 		return ss.str();

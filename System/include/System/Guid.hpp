@@ -1,6 +1,12 @@
 #pragma once
 
+#ifdef _WIN32
+
 #pragma comment(lib, "Ole32.lib")
+
+#include <combaseapi.h>
+
+#endif // !_WIN32
 
 #include <memory>
 #include <string>
@@ -15,6 +21,11 @@ namespace System
 		Guid(const std::array<unsigned char, 16>& arr);
 		Guid(const std::string& s);
 		Guid(const uint32_t a, const uint16_t b, const uint16_t c, const uint64_t d);
+		Guid(const uint32_t a, const uint16_t b, const uint16_t c, const std::array<unsigned char, 8>& d);
+
+#ifdef _WIN32
+		Guid(const GUID& g);
+#endif // !_WIN32
 
 		virtual ~Guid();
 

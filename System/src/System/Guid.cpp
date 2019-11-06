@@ -4,6 +4,7 @@
 #include <regex>
 #include <random>
 #include <iomanip>
+#include <sstream>
 
 namespace System
 {
@@ -66,26 +67,71 @@ namespace System
 
 	Guid::Guid(const uint32_t a, const uint16_t b, const uint16_t c, const uint64_t d)
 	{
-		m_data[ 0] = reinterpret_cast<const unsigned char*>(&a)[0];
-		m_data[ 1] = reinterpret_cast<const unsigned char*>(&a)[1];
-		m_data[ 2] = reinterpret_cast<const unsigned char*>(&a)[2];
-		m_data[ 3] = reinterpret_cast<const unsigned char*>(&a)[3];
+		m_data[ 0] = reinterpret_cast<const unsigned char*>(&a)[3];
+		m_data[ 1] = reinterpret_cast<const unsigned char*>(&a)[2];
+		m_data[ 2] = reinterpret_cast<const unsigned char*>(&a)[1];
+		m_data[ 3] = reinterpret_cast<const unsigned char*>(&a)[0];
 
-		m_data[ 4] = reinterpret_cast<const unsigned char*>(&b)[0];
-		m_data[ 5] = reinterpret_cast<const unsigned char*>(&b)[1];
+		m_data[ 4] = reinterpret_cast<const unsigned char*>(&b)[1];
+		m_data[ 5] = reinterpret_cast<const unsigned char*>(&b)[0];
 
-		m_data[ 6] = reinterpret_cast<const unsigned char*>(&c)[0];
-		m_data[ 7] = reinterpret_cast<const unsigned char*>(&c)[1];
+		m_data[ 6] = reinterpret_cast<const unsigned char*>(&c)[1];
+		m_data[ 7] = reinterpret_cast<const unsigned char*>(&c)[0];
 
-		m_data[ 8] = reinterpret_cast<const unsigned char*>(&d)[0];
-		m_data[ 9] = reinterpret_cast<const unsigned char*>(&d)[1];
-		m_data[10] = reinterpret_cast<const unsigned char*>(&d)[2];
-		m_data[11] = reinterpret_cast<const unsigned char*>(&d)[3];
-		m_data[12] = reinterpret_cast<const unsigned char*>(&d)[4];
-		m_data[13] = reinterpret_cast<const unsigned char*>(&d)[5];
-		m_data[14] = reinterpret_cast<const unsigned char*>(&d)[6];
-		m_data[15] = reinterpret_cast<const unsigned char*>(&d)[7];
+		m_data[ 8] = reinterpret_cast<const unsigned char*>(&d)[7];
+		m_data[ 9] = reinterpret_cast<const unsigned char*>(&d)[6];
+		m_data[10] = reinterpret_cast<const unsigned char*>(&d)[5];
+		m_data[11] = reinterpret_cast<const unsigned char*>(&d)[4];
+		m_data[12] = reinterpret_cast<const unsigned char*>(&d)[3];
+		m_data[13] = reinterpret_cast<const unsigned char*>(&d)[2];
+		m_data[14] = reinterpret_cast<const unsigned char*>(&d)[1];
+		m_data[15] = reinterpret_cast<const unsigned char*>(&d)[0];
 	}
+
+	Guid::Guid(const uint32_t a, const uint16_t b, const uint16_t c, const std::array<unsigned char, 8>& d)
+	{
+		m_data[ 0] = reinterpret_cast<const unsigned char*>(&a)[3];
+		m_data[ 1] = reinterpret_cast<const unsigned char*>(&a)[2];
+		m_data[ 2] = reinterpret_cast<const unsigned char*>(&a)[1];
+		m_data[ 3] = reinterpret_cast<const unsigned char*>(&a)[0];
+
+		m_data[ 4] = reinterpret_cast<const unsigned char*>(&b)[1];
+		m_data[ 5] = reinterpret_cast<const unsigned char*>(&b)[0];
+
+		m_data[ 6] = reinterpret_cast<const unsigned char*>(&c)[1];
+		m_data[ 7] = reinterpret_cast<const unsigned char*>(&c)[0];
+
+		m_data[ 8] = d[0];
+		m_data[ 9] = d[1];
+		m_data[10] = d[2];
+		m_data[11] = d[3];
+		m_data[12] = d[4];
+		m_data[13] = d[5];
+		m_data[14] = d[6];
+		m_data[15] = d[7];
+	}
+
+#ifdef _WIN32
+	Guid::Guid(const GUID& g)
+		: Guid(
+			static_cast<uint32_t>(g.Data1),
+			static_cast<uint16_t>(g.Data2),
+			static_cast<uint16_t>(g.Data3),
+			std::array<unsigned char, 8>{
+				g.Data4[0],
+				g.Data4[1],
+				g.Data4[2],
+				g.Data4[3],
+				g.Data4[4],
+				g.Data4[5],
+				g.Data4[6],
+				g.Data4[7]
+			}
+		)
+	{
+
+	}
+#endif // !_WIN32
 
 	Guid::~Guid()
 	{
@@ -106,13 +152,13 @@ namespace System
 	{
 		std::random_device device{};
 		std::mt19937 engine{device()};
-		std::uniform_int_distribution<unsigned char> distribution {};
+		std::uniform_int_distribution<int> distribution {};
 
 		Guid guid;
 
 		for (auto& x : guid.m_data)
 		{
-			x = distribution(engine);
+			x = static_cast<unsigned char>(distribution(engine));
 		}
 
 		return guid;
@@ -155,107 +201,107 @@ namespace System
 		if (format.empty() || format == "D")
 		{
 			ss	<< std::setfill('0') << std::hex
-				<< std::setw(2) << m_data[ 0]
-				<< std::setw(2) << m_data[ 1]
-				<< std::setw(2) << m_data[ 2]
-				<< std::setw(2) << m_data[ 3] << "-"
-				<< std::setw(2) << m_data[ 4]
-				<< std::setw(2) << m_data[ 5] << "-"
-				<< std::setw(2) << m_data[ 6]
-				<< std::setw(2) << m_data[ 7] << "-"
-				<< std::setw(2) << m_data[ 8]
-				<< std::setw(2) << m_data[ 9] << "-"
-				<< std::setw(2) << m_data[10]
-				<< std::setw(2) << m_data[11]
-				<< std::setw(2) << m_data[12]
-				<< std::setw(2) << m_data[13]
-				<< std::setw(2) << m_data[14]
-				<< std::setw(2) << m_data[15];
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 0])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 1])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 2])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 3]) << "-"
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 4])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 5]) << "-"
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 6])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 7]) << "-"
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 8])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 9]) << "-"
+				<< std::setw(2) << static_cast<unsigned>(m_data[10])
+				<< std::setw(2) << static_cast<unsigned>(m_data[11])
+				<< std::setw(2) << static_cast<unsigned>(m_data[12])
+				<< std::setw(2) << static_cast<unsigned>(m_data[13])
+				<< std::setw(2) << static_cast<unsigned>(m_data[14])
+				<< std::setw(2) << static_cast<unsigned>(m_data[15]);
 		}
 		else if (format == "N")
 		{
 			ss	<< std::setfill('0') << std::hex
-				<< std::setw(2) << m_data[ 0]
-				<< std::setw(2) << m_data[ 1]
-				<< std::setw(2) << m_data[ 2]
-				<< std::setw(2) << m_data[ 3]
-				<< std::setw(2) << m_data[ 4]
-				<< std::setw(2) << m_data[ 5]
-				<< std::setw(2) << m_data[ 6]
-				<< std::setw(2) << m_data[ 7]
-				<< std::setw(2) << m_data[ 8]
-				<< std::setw(2) << m_data[ 9]
-				<< std::setw(2) << m_data[10]
-				<< std::setw(2) << m_data[11]
-				<< std::setw(2) << m_data[12]
-				<< std::setw(2) << m_data[13]
-				<< std::setw(2) << m_data[14]
-				<< std::setw(2) << m_data[15];
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 0])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 1])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 2])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 3])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 4])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 5])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 6])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 7])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 8])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 9])
+				<< std::setw(2) << static_cast<unsigned>(m_data[10])
+				<< std::setw(2) << static_cast<unsigned>(m_data[11])
+				<< std::setw(2) << static_cast<unsigned>(m_data[12])
+				<< std::setw(2) << static_cast<unsigned>(m_data[13])
+				<< std::setw(2) << static_cast<unsigned>(m_data[14])
+				<< std::setw(2) << static_cast<unsigned>(m_data[15]);
 		}
 		else if (format == "B")
 		{
 			ss	<< std::setfill('0') << std::hex
 				<< "{"
-				<< std::setw(2) << m_data[ 0]
-				<< std::setw(2) << m_data[ 1]
-				<< std::setw(2) << m_data[ 2]
-				<< std::setw(2) << m_data[ 3] << "-"
-				<< std::setw(2) << m_data[ 4]
-				<< std::setw(2) << m_data[ 5] << "-"
-				<< std::setw(2) << m_data[ 6]
-				<< std::setw(2) << m_data[ 7] << "-"
-				<< std::setw(2) << m_data[ 8]
-				<< std::setw(2) << m_data[ 9] << "-"
-				<< std::setw(2) << m_data[10]
-				<< std::setw(2) << m_data[11]
-				<< std::setw(2) << m_data[12]
-				<< std::setw(2) << m_data[13]
-				<< std::setw(2) << m_data[14]
-				<< std::setw(2) << m_data[15]
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 0])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 1])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 2])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 3]) << "-"
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 4])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 5]) << "-"
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 6])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 7]) << "-"
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 8])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 9]) << "-"
+				<< std::setw(2) << static_cast<unsigned>(m_data[10])
+				<< std::setw(2) << static_cast<unsigned>(m_data[11])
+				<< std::setw(2) << static_cast<unsigned>(m_data[12])
+				<< std::setw(2) << static_cast<unsigned>(m_data[13])
+				<< std::setw(2) << static_cast<unsigned>(m_data[14])
+				<< std::setw(2) << static_cast<unsigned>(m_data[15])
 				<< "}";
 		}
 		else if (format == "P")
 		{
 			ss	<< std::setfill('0') << std::hex
 				<< "("
-				<< std::setw(2) << m_data[ 0]
-				<< std::setw(2) << m_data[ 1]
-				<< std::setw(2) << m_data[ 2]
-				<< std::setw(2) << m_data[ 3] << "-"
-				<< std::setw(2) << m_data[ 4]
-				<< std::setw(2) << m_data[ 5] << "-"
-				<< std::setw(2) << m_data[ 6]
-				<< std::setw(2) << m_data[ 7] << "-"
-				<< std::setw(2) << m_data[ 8]
-				<< std::setw(2) << m_data[ 9] << "-"
-				<< std::setw(2) << m_data[10]
-				<< std::setw(2) << m_data[11]
-				<< std::setw(2) << m_data[12]
-				<< std::setw(2) << m_data[13]
-				<< std::setw(2) << m_data[14]
-				<< std::setw(2) << m_data[15]
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 0])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 1])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 2])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 3]) << "-"
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 4])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 5]) << "-"
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 6])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 7]) << "-"
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 8])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 9]) << "-"
+				<< std::setw(2) << static_cast<unsigned>(m_data[10])
+				<< std::setw(2) << static_cast<unsigned>(m_data[11])
+				<< std::setw(2) << static_cast<unsigned>(m_data[12])
+				<< std::setw(2) << static_cast<unsigned>(m_data[13])
+				<< std::setw(2) << static_cast<unsigned>(m_data[14])
+				<< std::setw(2) << static_cast<unsigned>(m_data[15])
 				<< ")";
 		}
 		else if (format == "X")
 		{
 			ss	<< std::setfill('0') << std::hex
 				<< "{0x"
-				<< std::setw(2) << m_data[ 0]
-				<< std::setw(2) << m_data[ 1]
-				<< std::setw(2) << m_data[ 2]
-				<< std::setw(2) << m_data[ 3] << ",0x"
-				<< std::setw(2) << m_data[ 4]
-				<< std::setw(2) << m_data[ 5] << ",0x"
-				<< std::setw(2) << m_data[ 6]
-				<< std::setw(2) << m_data[ 7] << ",{0x"
-				<< std::setw(2) << m_data[ 8] << ",0x"
-				<< std::setw(2) << m_data[ 9] << ",0x"
-				<< std::setw(2) << m_data[10] << ",0x"
-				<< std::setw(2) << m_data[11] << ",0x"
-				<< std::setw(2) << m_data[12] << ",0x"
-				<< std::setw(2) << m_data[13] << ",0x"
-				<< std::setw(2) << m_data[14] << ",0x"
-				<< std::setw(2) << m_data[15] << "}"
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 0])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 1])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 2])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 3]) << ",0x"
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 4])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 5]) << ",0x"
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 6])
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 7]) << ",{0x"
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 8]) << ",0x"
+				<< std::setw(2) << static_cast<unsigned>(m_data[ 9]) << ",0x"
+				<< std::setw(2) << static_cast<unsigned>(m_data[10]) << ",0x"
+				<< std::setw(2) << static_cast<unsigned>(m_data[11]) << ",0x"
+				<< std::setw(2) << static_cast<unsigned>(m_data[12]) << ",0x"
+				<< std::setw(2) << static_cast<unsigned>(m_data[13]) << ",0x"
+				<< std::setw(2) << static_cast<unsigned>(m_data[14]) << ",0x"
+				<< std::setw(2) << static_cast<unsigned>(m_data[15]) << "}"
 				<< "}";
 		}
 		else

@@ -9,7 +9,7 @@ using namespace ::System::Drawing;
 
 namespace UnitTest
 {
-	namespace System
+	namespace SystemTest
 	{
 		namespace Drawing
 		{
