@@ -1,4 +1,4 @@
-#include <System\Text\Encoding.hpp>
+#include <System/Text/Encoding.hpp>
 
 #include <Windows.h>
 

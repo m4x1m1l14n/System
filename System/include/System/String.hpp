@@ -3,8 +3,11 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <algorithm>
+#include <cctype>
 
-namespace System {
+namespace System
+{
 	namespace String
 	{
 		template <typename _C, typename _Function>
@@ -55,6 +58,42 @@ namespace System {
 			}
 
 			return ss.str();
+		}
+
+		template <typename _T>
+		inline std::basic_string<_T>& UpperCase(std::basic_string<_T>& s)
+		{
+			std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::toupper(c); });
+
+			return s;
+		}
+
+		template <typename _T>
+		inline std::basic_string<_T> UpperCaseCopy(const std::basic_string<_T>& s)
+		{
+			auto copy = s;
+
+			String::UpperCase(copy);
+
+			return copy;
+		}
+
+		template <typename _T>
+		inline std::basic_string<_T>& LowerCase(std::basic_string<_T>& s)
+		{
+			std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::tolower(c); });
+
+			return s;
+		}
+
+		template <typename _T>
+		inline std::basic_string<_T> LowerCaseCopy(const std::basic_string<_T>& s)
+		{
+			auto copy = s;
+
+			String::LowerCase(copy);
+
+			return copy;
 		}
 
 		inline std::string Implode(const std::vector<std::string>& v, const char* separator)

@@ -8,3 +8,4 @@
 /obj/*
 *.ipch
 /build/*
+/.vscode/*

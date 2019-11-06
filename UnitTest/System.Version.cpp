@@ -5,7 +5,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace UnitTest
 {
-	namespace System
+	namespace SystemTest
 	{
 		TEST_CLASS(VersionTest)
 		{
@@ -16,19 +16,19 @@ namespace UnitTest
 
 				Assert::IsFalse(version);
 				Assert::IsTrue(version.IsEmpty());
-				Assert::AreEqual(version.Major, 0u);
-				Assert::AreEqual(version.Minor, 0u);
-				Assert::AreEqual(version.Build, 0u);
-				Assert::AreEqual(version.Revision, 0u);
-				Assert::AreEqual(version.ToString(), std::wstring(L"0.0.0"));
+				Assert::AreEqual(0u, version.getMajor());
+				Assert::AreEqual(0u, version.getMinor());
+				Assert::AreEqual(0u, version.getBuild());
+				Assert::AreEqual(0u, version.getRevision());
+				Assert::AreEqual(std::string("0.0.0"), version.ToString());
 				// Out of range input
-				Assert::AreEqual(version.ToString(0), std::wstring(L"0"));
-				Assert::AreEqual(version.ToString(10), std::wstring(L"0.0.0.0"));
+				Assert::AreEqual(std::string("0"), version.ToString(0));
+				Assert::AreEqual(std::string("0.0.0.0"), version.ToString(10));
 
-				Assert::AreEqual(version.ToString(1), std::wstring(L"0"));
-				Assert::AreEqual(version.ToString(2), std::wstring(L"0.0"));
-				Assert::AreEqual(version.ToString(3), std::wstring(L"0.0.0"));
-				Assert::AreEqual(version.ToString(4), std::wstring(L"0.0.0.0"));
+				Assert::AreEqual(std::string("0"), version.ToString(1));
+				Assert::AreEqual(std::string("0.0"), version.ToString(2));
+				Assert::AreEqual(std::string("0.0.0"), version.ToString(3));
+				Assert::AreEqual(std::string("0.0.0.0"), version.ToString(4));
 			}
 
 			TEST_METHOD(Ctor1)
@@ -37,25 +37,25 @@ namespace UnitTest
 
 				Assert::IsTrue(version);
 				Assert::IsFalse(version.IsEmpty());
-				Assert::AreEqual(version.Major, 3u);
-				Assert::AreEqual(version.Minor, 0u);
-				Assert::AreEqual(version.Build, 0u);
-				Assert::AreEqual(version.Revision, 0u);
-				Assert::AreEqual(version.ToString(), std::wstring(L"3.0.0"));
+				Assert::AreEqual(3u, version.getMajor());
+				Assert::AreEqual(0u, version.getMinor());
+				Assert::AreEqual(0u, version.getBuild());
+				Assert::AreEqual(0u, version.getRevision());
+				Assert::AreEqual(std::string("3.0.0"), version.ToString());
 				// Out of range input
-				Assert::AreEqual(version.ToString(0), std::wstring(L"3"));
-				Assert::AreEqual(version.ToString(10), std::wstring(L"3.0.0.0"));
+				Assert::AreEqual(std::string("3"), version.ToString(0));
+				Assert::AreEqual(std::string("3.0.0.0"), version.ToString(10));
 
-				Assert::AreEqual(version.ToString(1), std::wstring(L"3"));
-				Assert::AreEqual(version.ToString(2), std::wstring(L"3.0"));
-				Assert::AreEqual(version.ToString(3), std::wstring(L"3.0.0"));
-				Assert::AreEqual(version.ToString(4), std::wstring(L"3.0.0.0"));
+				Assert::AreEqual(std::string("3"), version.ToString(1));
+				Assert::AreEqual(std::string("3.0"), version.ToString(2));
+				Assert::AreEqual(std::string("3.0.0"), version.ToString(3));
+				Assert::AreEqual(std::string("3.0.0.0"), version.ToString(4));
 				
-				//Assert::ExpectException<std::invalid_argument>([] { ::System::Guid guid(L""); });
-				//Assert::ExpectException<std::invalid_argument>([] { ::System::Guid guid(L"Yeaaahaa!!!"); });
-				//Assert::ExpectException<std::invalid_argument>([] { ::System::Guid guid(L"{7f5099f6-3cc1-4185-b8c3-b8c3-3a6c7d01c292}"); });
+				//Assert::ExpectException<std::invalid_argument>([] { ::System::Guid guid(""); });
+				//Assert::ExpectException<std::invalid_argument>([] { ::System::Guid guid("Yeaaahaa!!!"); });
+				//Assert::ExpectException<std::invalid_argument>([] { ::System::Guid guid("{7f5099f6-3cc1-4185-b8c3-b8c3-3a6c7d01c292}"); });
 				//// Notice "g" in provided GUID
-				//Assert::ExpectException<std::invalid_argument>([] { ::System::Guid guid(L"{7f5099f6-3cc1-4185-b8g3-3a6c7d01c292}"); });
+				//Assert::ExpectException<std::invalid_argument>([] { ::System::Guid guid("{7f5099f6-3cc1-4185-b8g3-3a6c7d01c292}"); });
 			}
 
 			TEST_METHOD(Ctor2)
@@ -64,19 +64,19 @@ namespace UnitTest
 
 				Assert::IsTrue(version);
 				Assert::IsFalse(version.IsEmpty());
-				Assert::AreEqual(version.Major, 3u);
-				Assert::AreEqual(version.Minor, 100u);
-				Assert::AreEqual(version.Build, 0u);
-				Assert::AreEqual(version.Revision, 0u);
-				Assert::AreEqual(version.ToString(), std::wstring(L"3.100.0"));
+				Assert::AreEqual(3u, version.getMajor());
+				Assert::AreEqual(100u, version.getMinor());
+				Assert::AreEqual(0u, version.getBuild());
+				Assert::AreEqual(0u, version.getRevision());
+				Assert::AreEqual(std::string("3.100.0"), version.ToString());
 				// Out of range input
-				Assert::AreEqual(version.ToString(0), std::wstring(L"3"));
-				Assert::AreEqual(version.ToString(10), std::wstring(L"3.100.0.0"));
+				Assert::AreEqual(std::string("3"), version.ToString(0));
+				Assert::AreEqual(std::string("3.100.0.0"), version.ToString(10));
 
-				Assert::AreEqual(version.ToString(1), std::wstring(L"3"));
-				Assert::AreEqual(version.ToString(2), std::wstring(L"3.100"));
-				Assert::AreEqual(version.ToString(3), std::wstring(L"3.100.0"));
-				Assert::AreEqual(version.ToString(4), std::wstring(L"3.100.0.0"));
+				Assert::AreEqual(std::string("3"), version.ToString(1));
+				Assert::AreEqual(std::string("3.100"), version.ToString(2));
+				Assert::AreEqual(std::string("3.100.0"), version.ToString(3));
+				Assert::AreEqual(std::string("3.100.0.0"), version.ToString(4));
 			}
 
 			TEST_METHOD(Ctor3)
@@ -85,19 +85,19 @@ namespace UnitTest
 
 				Assert::IsTrue(version);
 				Assert::IsFalse(version.IsEmpty());
-				Assert::AreEqual(version.Major, 3u);
-				Assert::AreEqual(version.Minor, 100u);
-				Assert::AreEqual(version.Build, 14u);
-				Assert::AreEqual(version.Revision, 0u);
-				Assert::AreEqual(version.ToString(), std::wstring(L"3.100.14"));
+				Assert::AreEqual(3u, version.getMajor());
+				Assert::AreEqual(100u, version.getMinor());
+				Assert::AreEqual(14u, version.getBuild());
+				Assert::AreEqual(0u, version.getRevision());
+				Assert::AreEqual(std::string("3.100.14"), version.ToString());
 				// Out of range input
-				Assert::AreEqual(version.ToString(0), std::wstring(L"3"));
-				Assert::AreEqual(version.ToString(10), std::wstring(L"3.100.14.0"));
+				Assert::AreEqual(std::string("3"), version.ToString(0));
+				Assert::AreEqual(std::string("3.100.14.0"), version.ToString(10));
 
-				Assert::AreEqual(version.ToString(1), std::wstring(L"3"));
-				Assert::AreEqual(version.ToString(2), std::wstring(L"3.100"));
-				Assert::AreEqual(version.ToString(3), std::wstring(L"3.100.14"));
-				Assert::AreEqual(version.ToString(4), std::wstring(L"3.100.14.0"));
+				Assert::AreEqual(std::string("3"), version.ToString(1));
+				Assert::AreEqual(std::string("3.100"), version.ToString(2));
+				Assert::AreEqual(std::string("3.100.14"), version.ToString(3));
+				Assert::AreEqual(std::string("3.100.14.0"), version.ToString(4));
 			}
 
 			TEST_METHOD(Ctor4)
@@ -106,19 +106,19 @@ namespace UnitTest
 
 				Assert::IsTrue(version);
 				Assert::IsFalse(version.IsEmpty());
-				Assert::AreEqual(version.Major, 3u);
-				Assert::AreEqual(version.Minor, 100u);
-				Assert::AreEqual(version.Build, 14u);
-				Assert::AreEqual(version.Revision, 2u);
-				Assert::AreEqual(version.ToString(), std::wstring(L"3.100.14"));
+				Assert::AreEqual(3u, version.getMajor());
+				Assert::AreEqual(100u, version.getMinor());
+				Assert::AreEqual(14u, version.getBuild());
+				Assert::AreEqual(2u, version.getRevision());
+				Assert::AreEqual(std::string("3.100.14"), version.ToString());
 				// Out of range input
-				Assert::AreEqual(version.ToString(0), std::wstring(L"3"));
-				Assert::AreEqual(version.ToString(10), std::wstring(L"3.100.14.2"));
+				Assert::AreEqual(std::string("3"), version.ToString(0));
+				Assert::AreEqual(std::string("3.100.14.2"), version.ToString(10));
 
-				Assert::AreEqual(version.ToString(1), std::wstring(L"3"));
-				Assert::AreEqual(version.ToString(2), std::wstring(L"3.100"));
-				Assert::AreEqual(version.ToString(3), std::wstring(L"3.100.14"));
-				Assert::AreEqual(version.ToString(4), std::wstring(L"3.100.14.2"));
+				Assert::AreEqual(std::string("3"), version.ToString(1));
+				Assert::AreEqual(std::string("3.100"), version.ToString(2));
+				Assert::AreEqual(std::string("3.100.14"), version.ToString(3));
+				Assert::AreEqual(std::string("3.100.14.2"), version.ToString(4));
 			}
 
 			TEST_METHOD(CtorString)
@@ -127,73 +127,73 @@ namespace UnitTest
 
 				Assert::IsTrue(version);
 				Assert::IsFalse(version.IsEmpty());
-				Assert::AreEqual(version.Major, 25u);
-				Assert::AreEqual(version.Minor, 16u);
-				Assert::AreEqual(version.Build, 2577u);
-				Assert::AreEqual(version.Revision, 12u);
-				Assert::AreEqual(version.ToString(), std::wstring(L"25.16.2577"));
+				Assert::AreEqual(25u, version.getMajor());
+				Assert::AreEqual(16u, version.getMinor());
+				Assert::AreEqual(2577u, version.getBuild());
+				Assert::AreEqual(12u, version.getRevision());
+				Assert::AreEqual(std::string("25.16.2577"), version.ToString());
 				// Out of range input
-				Assert::AreEqual(version.ToString(0), std::wstring(L"25"));
-				Assert::AreEqual(version.ToString(10), std::wstring(L"25.16.2577.12"));
+				Assert::AreEqual(std::string("25"), version.ToString(0));
+				Assert::AreEqual(std::string("25.16.2577.12"), version.ToString(10));
 
-				Assert::AreEqual(version.ToString(1), std::wstring(L"25"));
-				Assert::AreEqual(version.ToString(2), std::wstring(L"25.16"));
-				Assert::AreEqual(version.ToString(3), std::wstring(L"25.16.2577"));
-				Assert::AreEqual(version.ToString(4), std::wstring(L"25.16.2577.12"));
+				Assert::AreEqual(std::string("25"), version.ToString(1));
+				Assert::AreEqual(std::string("25.16"), version.ToString(2));
+				Assert::AreEqual(std::string("25.16.2577"), version.ToString(3));
+				Assert::AreEqual(std::string("25.16.2577.12"), version.ToString(4));
 
 				version = ::System::Version("25.16.2577");
 
 				Assert::IsTrue(version);
 				Assert::IsFalse(version.IsEmpty());
-				Assert::AreEqual(version.Major, 25u);
-				Assert::AreEqual(version.Minor, 16u);
-				Assert::AreEqual(version.Build, 2577u);
-				Assert::AreEqual(version.Revision, 0u);
-				Assert::AreEqual(version.ToString(), std::wstring(L"25.16.2577"));
+				Assert::AreEqual(25u, version.getMajor());
+				Assert::AreEqual(16u, version.getMinor());
+				Assert::AreEqual(2577u, version.getBuild());
+				Assert::AreEqual(0u, version.getRevision());
+				Assert::AreEqual(std::string("25.16.2577"), version.ToString());
 				// Out of range input
-				Assert::AreEqual(version.ToString(0), std::wstring(L"25"));
-				Assert::AreEqual(version.ToString(10), std::wstring(L"25.16.2577.0"));
+				Assert::AreEqual(std::string("25"), version.ToString(0));
+				Assert::AreEqual(std::string("25.16.2577.0"), version.ToString(10));
 
-				Assert::AreEqual(version.ToString(1), std::wstring(L"25"));
-				Assert::AreEqual(version.ToString(2), std::wstring(L"25.16"));
-				Assert::AreEqual(version.ToString(3), std::wstring(L"25.16.2577"));
-				Assert::AreEqual(version.ToString(4), std::wstring(L"25.16.2577.0"));
+				Assert::AreEqual(std::string("25"), version.ToString(1));
+				Assert::AreEqual(std::string("25.16"), version.ToString(2));
+				Assert::AreEqual(std::string("25.16.2577"), version.ToString(3));
+				Assert::AreEqual(std::string("25.16.2577.0"), version.ToString(4));
 
 				version = ::System::Version("25.16");
 
 				Assert::IsTrue(version);
 				Assert::IsFalse(version.IsEmpty());
-				Assert::AreEqual(version.Major, 25u);
-				Assert::AreEqual(version.Minor, 16u);
-				Assert::AreEqual(version.Build, 0u);
-				Assert::AreEqual(version.Revision, 0u);
-				Assert::AreEqual(version.ToString(), std::wstring(L"25.16.0"));
+				Assert::AreEqual(25u, version.getMajor());
+				Assert::AreEqual(16u, version.getMinor());
+				Assert::AreEqual(0u, version.getBuild());
+				Assert::AreEqual(0u, version.getRevision());
+				Assert::AreEqual(std::string("25.16.0"), version.ToString());
 				// Out of range input
-				Assert::AreEqual(version.ToString(0), std::wstring(L"25"));
-				Assert::AreEqual(version.ToString(10), std::wstring(L"25.16.0.0"));
+				Assert::AreEqual(std::string("25"), version.ToString(0));
+				Assert::AreEqual(std::string("25.16.0.0"), version.ToString(10));
 
-				Assert::AreEqual(version.ToString(1), std::wstring(L"25"));
-				Assert::AreEqual(version.ToString(2), std::wstring(L"25.16"));
-				Assert::AreEqual(version.ToString(3), std::wstring(L"25.16.0"));
-				Assert::AreEqual(version.ToString(4), std::wstring(L"25.16.0.0"));
+				Assert::AreEqual(std::string("25"), version.ToString(1));
+				Assert::AreEqual(std::string("25.16"), version.ToString(2));
+				Assert::AreEqual(std::string("25.16.0"), version.ToString(3));
+				Assert::AreEqual(std::string("25.16.0.0"), version.ToString(4));
 
 				version = ::System::Version("25");
 
 				Assert::IsTrue(version);
 				Assert::IsFalse(version.IsEmpty());
-				Assert::AreEqual(version.Major, 25u);
-				Assert::AreEqual(version.Minor, 0u);
-				Assert::AreEqual(version.Build, 0u);
-				Assert::AreEqual(version.Revision, 0u);
-				Assert::AreEqual(version.ToString(), std::wstring(L"25.0.0"));
+				Assert::AreEqual(25u, version.getMajor());
+				Assert::AreEqual(0u, version.getMinor());
+				Assert::AreEqual(0u, version.getBuild());
+				Assert::AreEqual(0u, version.getRevision());
+				Assert::AreEqual(std::string("25.0.0"), version.ToString());
 				// Out of range input
-				Assert::AreEqual(version.ToString(0), std::wstring(L"25"));
-				Assert::AreEqual(version.ToString(10), std::wstring(L"25.0.0.0"));
+				Assert::AreEqual(std::string("25"), version.ToString(0));
+				Assert::AreEqual(std::string("25.0.0.0"), version.ToString(10));
 
-				Assert::AreEqual(version.ToString(1), std::wstring(L"25"));
-				Assert::AreEqual(version.ToString(2), std::wstring(L"25.0"));
-				Assert::AreEqual(version.ToString(3), std::wstring(L"25.0.0"));
-				Assert::AreEqual(version.ToString(4), std::wstring(L"25.0.0.0"));
+				Assert::AreEqual(std::string("25"), version.ToString(1));
+				Assert::AreEqual(std::string("25.0"), version.ToString(2));
+				Assert::AreEqual(std::string("25.0.0"), version.ToString(3));
+				Assert::AreEqual(std::string("25.0.0.0"), version.ToString(4));
 			}
 
 			TEST_METHOD(InvalidInputCtorString)
@@ -209,19 +209,19 @@ namespace UnitTest
 
 					Assert::IsFalse(version);
 					Assert::IsTrue(version.IsEmpty());
-					Assert::AreEqual(version.Major, 0u);
-					Assert::AreEqual(version.Minor, 0u);
-					Assert::AreEqual(version.Build, 0u);
-					Assert::AreEqual(version.Revision, 0u);
-					Assert::AreEqual(version.ToString(), std::wstring(L"0.0.0"));
+					Assert::AreEqual(0u, version.getMajor());
+					Assert::AreEqual(0u, version.getMinor());
+					Assert::AreEqual(0u, version.getBuild());
+					Assert::AreEqual(0u, version.getRevision());
+					Assert::AreEqual(std::string("0.0.0"), version.ToString());
 					// Out of range input
-					Assert::AreEqual(version.ToString(0), std::wstring(L"0"));
-					Assert::AreEqual(version.ToString(10), std::wstring(L"0.0.0.0"));
+					Assert::AreEqual(std::string("0"), version.ToString(0));
+					Assert::AreEqual(std::string("0.0.0.0"), version.ToString(10));
 
-					Assert::AreEqual(version.ToString(1), std::wstring(L"0"));
-					Assert::AreEqual(version.ToString(2), std::wstring(L"0.0"));
-					Assert::AreEqual(version.ToString(3), std::wstring(L"0.0.0"));
-					Assert::AreEqual(version.ToString(4), std::wstring(L"0.0.0.0"));
+					Assert::AreEqual(std::string("0"), version.ToString(1));
+					Assert::AreEqual(std::string("0.0"), version.ToString(2));
+					Assert::AreEqual(std::string("0.0.0"), version.ToString(3));
+					Assert::AreEqual(std::string("0.0.0.0"), version.ToString(4));
 				}
 			}
 

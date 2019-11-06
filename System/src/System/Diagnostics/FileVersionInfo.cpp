@@ -1,4 +1,4 @@
-#include <System\Diagnostics\FileVersionInfo.hpp>
+#include <System/Diagnostics/FileVersionInfo.hpp>
 
 #include <Windows.h>
 
