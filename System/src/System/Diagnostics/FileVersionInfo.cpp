@@ -1,7 +1,5 @@
 #include <System/Diagnostics/FileVersionInfo.hpp>
 
-#ifdef _WIN32
-
 #include <Windows.h>
 
 unsigned char* _GetFileVersionInfo(const std::wstring& fileName)
@@ -95,5 +93,3 @@ namespace System
 		}
 	}
 }
-
-#endif // !_WIN32

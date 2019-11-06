@@ -1,16 +1,22 @@
 set(project_name "System")
 
 file (GLOB _include "include/System/*.h*")
-file (GLOB _include_Diagnostics "include/System/Diagnostics/*.h*")
 file (GLOB _include_Drawing "include/System/Drawing/*.h*")
 file (GLOB _include_Net "include/System/Net/*.h*")
+
+if (MSVC)
 file (GLOB _include_Text "include/System/Text/*.h*")
+file (GLOB _include_Diagnostics "include/System/Diagnostics/*.h*")
 file (GLOB _include_Threading "include/System/Threading/*.h*")
+endif()
 
 file (GLOB _src "src/System/*.c*")
+
+if (MSVC)
 file (GLOB _src_Diagnostics "src/System/Diagnostics/*.c*")
-file (GLOB _src_Text "src/System/Text/*.c*")
 file (GLOB _src_Threading "src/System/Threading/*.c*")
+file (GLOB _src_Text "src/System/Text/*.c*")
+endif()
 
 # Set Properties->General->Configuration Type to Application(.exe)
 # Creates app.exe with the listed sources (main.cpp)
