@@ -1,7 +1,5 @@
 #include <System/Text/Encoding.hpp>
 
-#ifdef _WIN32
-
 #include <Windows.h>
 
 namespace System
@@ -71,5 +69,3 @@ namespace System
 		}
 	}
 }
-
-#endif // !_WIN32
