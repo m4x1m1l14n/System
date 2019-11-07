@@ -7,6 +7,7 @@
 #include <vector>
 #include <memory>
 #include <system_error>
+#include <iostream>
 
 using namespace System;
 
@@ -22,7 +23,17 @@ namespace System
 
 		EventWaitHandle::EventWaitHandle(bool signaled, EventResetMode mode, const std::wstring& name)
 		{
-			m_hEvent = ::CreateEvent(nullptr, mode == EventResetMode::ManualReset ? TRUE : FALSE, signaled ? TRUE : FALSE, name.c_str());
+			SECURITY_ATTRIBUTES sa = { 0 };
+
+			if (name.find(L"Global") != std::string::npos) {
+				SECURITY_DESCRIPTOR sd = { 0 };
+				::InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION);
+				::SetSecurityDescriptorDacl(&sd, TRUE, 0, FALSE);	
+				sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+				sa.lpSecurityDescriptor = &sd;
+			}
+
+			m_hEvent = ::CreateEvent(&sa, mode == EventResetMode::ManualReset ? TRUE : FALSE, signaled ? TRUE : FALSE, name.c_str());
 			if (m_hEvent == nullptr)
 			{
 				throw std::system_error(
