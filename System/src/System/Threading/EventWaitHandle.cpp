@@ -23,17 +23,42 @@ namespace System
 
 		EventWaitHandle::EventWaitHandle(bool signaled, EventResetMode mode, const std::wstring& name)
 		{
-			SECURITY_ATTRIBUTES sa = { 0 };
-
-			if (name.find(L"Global") != std::string::npos) {
+			static const std::wstring pattern = L"Global";
+			
+			if (!name.empty() && name.compare(0, pattern.length(), pattern) == 0)
+			{
 				SECURITY_DESCRIPTOR sd = { 0 };
-				::InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION);
-				::SetSecurityDescriptorDacl(&sd, TRUE, 0, FALSE);	
+
+				BOOL fResult = ::InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION);
+				if (fResult == FALSE)
+				{
+					throw std::system_error(
+						std::error_code(::GetLastError(), std::system_category()),
+						"InitializeSecurityDescriptor() returned FALSE"
+					);
+				}
+
+				fResult = ::SetSecurityDescriptorDacl(&sd, TRUE, nullptr, FALSE);	
+				if (fResult == FALSE)
+				{
+					throw std::system_error(
+						std::error_code(::GetLastError(), std::system_category()),
+						"InitializeSecurityDescriptor() returned FALSE"
+					);
+				}
+
+				SECURITY_ATTRIBUTES sa = { 0 };
+
 				sa.nLength = sizeof(SECURITY_ATTRIBUTES);
 				sa.lpSecurityDescriptor = &sd;
+
+				m_hEvent = ::CreateEvent(&sa, mode == EventResetMode::ManualReset ? TRUE : FALSE, signaled ? TRUE : FALSE, name.c_str());
+			}
+			else
+			{
+				m_hEvent = ::CreateEvent(nullptr, mode == EventResetMode::ManualReset ? TRUE : FALSE, signaled ? TRUE : FALSE, name.c_str());
 			}
 
-			m_hEvent = ::CreateEvent(&sa, mode == EventResetMode::ManualReset ? TRUE : FALSE, signaled ? TRUE : FALSE, name.c_str());
 			if (m_hEvent == nullptr)
 			{
 				throw std::system_error(
