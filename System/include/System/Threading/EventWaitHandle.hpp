@@ -1,7 +1,5 @@
 #pragma once
 
-#include <wtypes.h>
-
 #include <vector>
 #include <memory>
 #include <exception>
@@ -10,7 +8,8 @@ namespace System
 {
 	namespace Threading
 	{
-		enum EventResetMode {
+		enum EventResetMode
+		{
 			AutoReset,
 			ManualReset
 		};
@@ -22,7 +21,7 @@ namespace System
 		class EventWaitHandle
 		{
 		public:
-			static const int WaitTimeout = WAIT_TIMEOUT;
+			static const int WaitTimeout;
 
 		public:
 			EventWaitHandle(bool signaled, EventResetMode mode);
@@ -30,7 +29,12 @@ namespace System
 
 			virtual ~EventWaitHandle();
 
-			explicit operator HANDLE() const;
+#if defined(_WIN32)
+
+			explicit operator void*() const;
+
+#endif // !_WIN32
+
 			operator bool() const;
 
 			void Set();
@@ -39,15 +43,15 @@ namespace System
 			bool IsSet() const;
 
 			int WaitOne() const;
-			int WaitOne(DWORD dwMilliseconds) const;
+			int WaitOne(uint32_t milliseconds) const;
 
 			static int WaitAny(const std::vector<EventWaitHandle_ptr>& waitHandles);
-			static int WaitAny(const std::vector<EventWaitHandle_ptr>& waitHandles, DWORD dwMilliseconds);
+			static int WaitAny(const std::vector<EventWaitHandle_ptr>& waitHandles, uint32_t milliseconds);
 			static bool WaitAll(const std::vector<EventWaitHandle_ptr>& waitHandles);
-			static bool WaitAll(const std::vector<EventWaitHandle_ptr>& waitHandles, DWORD dwMilliseconds);
+			static bool WaitAll(const std::vector<EventWaitHandle_ptr>& waitHandles, uint32_t milliseconds);
 
 		protected:
-			HANDLE m_hEvent;
+			void* m_hEvent;
 		};
 	}
 }
