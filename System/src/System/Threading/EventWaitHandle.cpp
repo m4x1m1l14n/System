@@ -1,6 +1,4 @@
-#pragma once
-
-#include <System\Threading\EventWaitHandle.hpp>
+#include <System/Threading/EventWaitHandle.hpp>
 
 #if defined(_WIN32)
 
@@ -15,15 +13,29 @@ typedef int BOOL;
 #define TRUE 1
 #define FALSE 0
 
-
-#endif
-
 namespace Linux
 {
 	struct EventObject
 	{
 
 	};
+
+	HANDLE CreateEvent(void* pEventAttributes, BOOL bManualReset, BOOL bInitialState, const wchar_t* lpName)
+	{
+		return nullptr;
+	}
+
+	BOOL CloseHandle(HANDLE hObject)
+	{
+		if (hObject != nullptr)
+		{
+			auto pEvent = reinterpret_cast<EventObject*>(hObject);
+
+			delete pEvent;
+		}
+
+		return TRUE;
+	}
 
 	BOOL SetEvent(HANDLE hEvent)
 	{
@@ -36,18 +48,33 @@ namespace Linux
 
 		auto pEvent = reinterpret_cast<EventObject*>(hEvent);
 		
+		return TRUE;
 	}
 
 	BOOL ResetEvent(HANDLE hEvent)
 	{
+		return TRUE;
+	}
 
+	DWORD WaitForSingleObject(HANDLE hEvent, DWORD milliseconds)
+	{
+		return 0;
+	}
+
+	DWORD WaitForMultipleObjects(DWORD nCount, const HANDLE* pHandles, BOOL bWaitAll, DWORD milliseconds)
+	{
+		return 0;
 	}
 
 	DWORD GetLastError()
 	{
-
+		return 0;
 	}
 }
+
+using namespace Linux;
+
+#endif
 
 #include <vector>
 #include <memory>
@@ -59,7 +86,12 @@ namespace System
 {
 	namespace Threading
 	{
-		const int EventWaitHandle::WaitTimeout = 258; // WAIT_TIMEOUT on Windows platform
+		const uint32_t EventWaitHandle::WaitTimeout = 258; // WAIT_TIMEOUT on Windows platform
+		const uint32_t EventWaitHandle::WaitAbandoned = 128;
+		const uint32_t EventWaitHandle::WaitFailed = static_cast<uint32_t>(-1);
+		const uint32_t EventWaitHandle::WaitObject0 = 0;
+
+		const uint32_t EventWaitHandle::Infinite = static_cast<uint32_t>(-1);
 
 		EventWaitHandle::EventWaitHandle(bool signaled, EventResetMode mode)
 			: EventWaitHandle(signaled, mode, std::wstring())
@@ -69,7 +101,7 @@ namespace System
 
 		EventWaitHandle::EventWaitHandle(bool signaled, EventResetMode mode, const std::wstring& name)
 		{
-			m_hEvent = ::CreateEvent(nullptr, mode == EventResetMode::ManualReset ? TRUE : FALSE, signaled ? TRUE : FALSE, name.c_str());
+			m_hEvent = CreateEvent(nullptr, mode == EventResetMode::ManualReset ? TRUE : FALSE, signaled ? TRUE : FALSE, name.c_str());
 			if (m_hEvent == nullptr)
 			{
 				throw std::system_error(
@@ -84,14 +116,10 @@ namespace System
 			::CloseHandle(m_hEvent);
 		}
 
-#if defined(_WIN32)
-
 		EventWaitHandle::operator void*() const
 		{
 			return m_hEvent;
 		}
-
-#endif
 
 		EventWaitHandle::operator bool() const { return IsSet(); }
 
@@ -121,22 +149,22 @@ namespace System
 
 		bool EventWaitHandle::IsSet() const
 		{
-			return (WaitOne(0) == WAIT_OBJECT_0);
+			return (WaitOne(0) == EventWaitHandle::Waitobject<0>());
 		}
 
 		int EventWaitHandle::WaitOne() const
 		{ 
-			return WaitOne(INFINITE); 
+			return WaitOne(EventWaitHandle::Infinite);
 		}
 
 		int EventWaitHandle::WaitOne(uint32_t milliseconds) const
 		{
-			return static_cast<int>(::WaitForSingleObject(m_hEvent, milliseconds));
+			return static_cast<int>(WaitForSingleObject(m_hEvent, milliseconds));
 		}
 
 		int EventWaitHandle::WaitAny(const std::vector<EventWaitHandle_ptr>& waitHandles)
 		{
-			return WaitAny(waitHandles, INFINITE);
+			return WaitAny(waitHandles, EventWaitHandle::Infinite);
 		}
 
 		int EventWaitHandle::WaitAny(const std::vector<EventWaitHandle_ptr>& waitHandles, uint32_t milliseconds)
@@ -154,7 +182,7 @@ namespace System
 					pHandles[i] = static_cast<HANDLE>(*waitHandles[i]);
 				}
 
-				ret = static_cast<int>(::WaitForMultipleObjects(dwCount, pHandles, FALSE, milliseconds));
+				ret = static_cast<int>(WaitForMultipleObjects(dwCount, pHandles, FALSE, milliseconds));
 
 				delete[] pHandles;
 			}
@@ -164,7 +192,7 @@ namespace System
 
 		bool EventWaitHandle::WaitAll(const std::vector<EventWaitHandle_ptr>& waitHandles)
 		{
-			return WaitAll(waitHandles, INFINITE);
+			return WaitAll(waitHandles, EventWaitHandle::Infinite);
 		}
 
 		bool EventWaitHandle::WaitAll(const std::vector<EventWaitHandle_ptr>& waitHandles, uint32_t milliseconds)
@@ -182,7 +210,7 @@ namespace System
 					pHandles[i] = static_cast<HANDLE>(*waitHandles[i]);
 				}
 
-				ret = (::WaitForMultipleObjects(dwCount, pHandles, TRUE, milliseconds) == WAIT_OBJECT_0);
+				ret = (WaitForMultipleObjects(dwCount, pHandles, TRUE, milliseconds) == EventWaitHandle::Waitobject<0>());
 
 				delete[] pHandles;
 			}

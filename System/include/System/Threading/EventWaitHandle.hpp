@@ -21,7 +21,18 @@ namespace System
 		class EventWaitHandle
 		{
 		public:
-			static const int WaitTimeout;
+			static const uint32_t WaitTimeout;
+			static const uint32_t WaitAbandoned;
+			static const uint32_t WaitFailed;
+			static const uint32_t WaitObject0;
+
+			static const uint32_t Infinite;
+
+			template <uint32_t N>
+			static constexpr uint32_t Waitobject()
+			{
+				return WaitObject0 + N;
+			}
 
 		public:
 			EventWaitHandle(bool signaled, EventResetMode mode);
@@ -29,11 +40,7 @@ namespace System
 
 			virtual ~EventWaitHandle();
 
-#if defined(_WIN32)
-
 			explicit operator void*() const;
-
-#endif // !_WIN32
 
 			operator bool() const;
 
