@@ -11,6 +11,7 @@ file (GLOB _include_Threading "include/System/Threading/*.h*")
 endif()
 
 file (GLOB _src "src/System/*.c*")
+file (GLOB _src_Net "src/System/Net/*.c*")
 
 if (MSVC)
 file (GLOB _src_Diagnostics "src/System/Diagnostics/*.c*")
@@ -32,7 +33,8 @@ add_library (${project_name}
                 ${_src}
 				${_src_Diagnostics}
 				${_src_Text}
-				${_src_Threading})
+				${_src_Threading}
+				${_src_Net})
 
 # Properties->General->Output Directory
 #if(WIN32)
@@ -59,10 +61,11 @@ source_group("include\\System\\Net"			FILES ${_include_Net})
 source_group("include\\System\\Text"		FILES ${_include_Text})				
 source_group("include\\System\\Threading"	FILES ${_include_Threading})	
 			
-source_group("src\\System"				FILES ${_src})				
-source_group("src\\System\\Diagnostics"	FILES ${_src_Diagnostics})				
-source_group("src\\System\\Text"		FILES ${_src_Text})				
-source_group("src\\System\\Threading"	FILES ${_src_Threading})				
+source_group("src\\System"					FILES ${_src})				
+source_group("src\\System\\Diagnostics"		FILES ${_src_Diagnostics})				
+source_group("src\\System\\Text"			FILES ${_src_Text})
+source_group("src\\System\\Net"				FILES ${_src_Net})
+source_group("src\\System\\Threading"		FILES ${_src_Threading})				
 
 # Properties->C/C++->General->Additional Include Directories
 include_directories (.)
