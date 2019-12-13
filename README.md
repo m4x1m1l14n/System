@@ -18,23 +18,23 @@ To build under Windows OS, after cloning this repository, open command line tool
 
 1. Create "build" directory, where CMake output files will be generated
 
-	```shell
-	$ mkdir build
+	```bash
+	mkdir build
 	```
 
 2. Switch to newly created output directory
 
-	```shell
-    $ cd build
-    ```
+	```bash
+	cd build
+	```
 
 3. While in build directory, execute CMake, to generate Visual Studio project files.
 
 	> **NOTE:**
 	> Code below requests projects for 64 bit architecture to be generated. To generate 32 bit, ommit -A command line argument, which will default to x86 generated output.
 
-	```shell
-	$ cmake . -A x64
+	```bash
+	cmake .. -A x64
 	```
 
 #### Linux
