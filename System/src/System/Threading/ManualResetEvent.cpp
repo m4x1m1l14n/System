@@ -1,4 +1,4 @@
-#include <System\Threading\ManualResetEvent.hpp>
+#include <System/Threading/ManualResetEvent.hpp>
 
 namespace System
 {

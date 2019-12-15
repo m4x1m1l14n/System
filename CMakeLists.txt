@@ -4,9 +4,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 project (System)
 
-set(CMAKE_MODULE_PATH
-    ${CMAKE_SOURCE_DIR}/cmake
-)
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 message(STATUS "CMAKE_MODULE_PATH:" ${CMAKE_MODULE_PATH})
 
 add_definitions(-DNOMINMAX)

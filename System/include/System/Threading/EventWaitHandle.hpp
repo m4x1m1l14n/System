@@ -24,6 +24,12 @@ namespace System
 		public:
 			static const int WaitTimeout = WAIT_TIMEOUT;
 
+			template <int N>
+			static constexpr int WaitObject()
+			{
+				return (WAIT_OBJECT_0 + N);
+			}
+
 		public:
 			EventWaitHandle(bool signaled, EventResetMode mode);
 			EventWaitHandle(bool signaled, EventResetMode mode, const std::wstring& name);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <System\Threading\EventWaitHandle.hpp>
+#include <System/Threading/EventWaitHandle.hpp>
 
 #include <wtypes.h>
 
