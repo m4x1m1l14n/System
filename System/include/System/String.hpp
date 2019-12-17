@@ -18,7 +18,7 @@ namespace System
 
 			std::vector<std::basic_string<_T>> splits;
 
-			std::basic_string<_T>::size_type pos = str.find_first_of(c);
+			typename std::basic_string<_T>::size_type pos = str.find_first_of(c);
 			decltype(pos) prevpos = 0;
 
 			while (pos != std::basic_string<_T>::npos)
@@ -44,7 +44,7 @@ namespace System
 
 			std::vector<std::basic_string<_T>> splits;
 
-			std::basic_string<_T>::size_type pos = str.find(delim);
+			typename std::basic_string<_T>::size_type pos = str.find(delim);
 			decltype(pos) prevpos = 0;
 
 			while (pos != std::basic_string<_T>::npos)
@@ -69,7 +69,7 @@ namespace System
 		template <typename _T>
 		std::basic_string<_T> Remove(std::basic_string<_T> str, const std::basic_string<_T>& needle)
 		{
-			std::basic_string<_T>::size_type pos = str.find(needle);
+			typename std::basic_string<_T>::size_type pos = str.find(needle);
  
 			if (pos != std::string::npos)
 			{
@@ -105,7 +105,7 @@ namespace System
 		template <typename _T>
 		std::basic_string<_T> RemoveAll(std::basic_string<_T> str, const std::basic_string<_T>& needle)
 		{
-			std::basic_string<_T>::size_type pos = std::string::npos;
+			typename std::basic_string<_T>::size_type pos = std::string::npos;
  
 			while ((pos = str.find(needle)) != std::string::npos)
 			{
@@ -267,6 +267,36 @@ namespace System
 			return String::Implode(v, std::wstring(separator));
 		}
 
+		template <typename _T>
+		inline bool IsPalindrome(const std::basic_string<_T>& s)
+		{
+			return std::equal(s.begin(), s.begin() + s.length() / 2, s.rbegin());
+		}
+
+		template <typename _T>
+		inline bool CompareCaseInsensitive(const std::basic_string<_T>& lhs, const std::basic_string<_T>& rhs)
+		{
+			// NOTE
+			//	When ranges specified with first and last iterators for both input strings
+			//	there is no need to check string sizes explicitly, because std::equal will do
+			//	it for us.
+			return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), [](const _T& a, const _T& b)
+			{
+				return std::tolower(a) == std::tolower(b);
+			});
+		}
+
+		inline bool CompareCaseInsensitive(const std::wstring& lhs, const std::wstring& rhs)
+		{
+			return CompareCaseInsensitive(lhs, rhs);
+		}
+
+		inline bool CompareCaseInsensitive(const std::string& lhs, const std::string& rhs)
+		{
+			return CompareCaseInsensitive(lhs, rhs);
+		}
+
+#ifdef _WIN32
 		inline bool CompareCaseInsensitive(const std::wstring& a, const std::wstring& b)
 		{
 			return (
@@ -282,5 +312,6 @@ namespace System
 				_strnicmp(a.c_str(), b.c_str(), a.length()) == 0
 				);
 		}
+#endif // _WIN32
 	}
 }
