@@ -1,7 +1,5 @@
 #include <System/Application.hpp>
 
-#include <System/IO/Path.hpp>
-
 #ifdef _WIN32
 #include <Windows/Helpers.hpp>
 #else
