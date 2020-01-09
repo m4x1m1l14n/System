@@ -38,11 +38,11 @@ namespace System
 				// Getters
 				IpcClientId ClientId() const;
 
-				json11::Json SendRequest(const json11::Json& data);
-				json11::Json SendRequest(const json11::Json& data, const TimeSpan& timeout);
+				std::string SendRequest(const std::string& data);
+				std::string SendRequest(const std::string& data, const TimeSpan& timeout);
 
-				void SendResponse(const IpcMessageId messageId, const json11::Json& data);
-				void SendResponse(const IpcMessageId messageId, const json11::Json& data, const TimeSpan& timeout);
+				void SendResponse(const IpcMessageId messageId, const std::string& data);
+				void SendResponse(const IpcMessageId messageId, const std::string& data, const TimeSpan& timeout);
 
 			private:
 				inline IpcMessageId GenerateRequestId(const IpcClientId clientId);
@@ -82,7 +82,7 @@ namespace System
 				std::mutex m_queueLock;
 				ManualResetEvent_ptr m_queueChangedEvent;
 
-				IpcRequestsQueue m_requestQueue; // TODO Rename to m_requests
+				std::map<const IpcMessageId, std::shared_ptr<IpcRequest>> m_requestQueue; // TODO Rename to m_requests
 				std::mutex m_requestQueueLock; // TODO Rename m_requestsLock
 
 				ManualResetEvent_ptr m_writeDoneEvent;
@@ -97,6 +97,8 @@ namespace System
 				static std::atomic<std::uint32_t> s_instanceCounter;
 				static std::atomic<std::uint32_t> s_messageIdIterator;
 			};
+
+			typedef std::shared_ptr<IpcClient> IpcClient_ptr;
 		}
 	}
 }

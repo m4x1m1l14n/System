@@ -1,6 +1,6 @@
 #include <System/Net/Http/HttpClient.hpp>
-
-#include <System/Net/Sockets/TlsSocket.hpp>
+// TODO link with openssl
+//#include <System/Net/Sockets/TlsSocket.hpp>
 
 #include <assert.h>
 
@@ -15,6 +15,7 @@ namespace System
 		{
 			namespace details
 			{
+				/*
 				static std::shared_ptr<SSL_CTX> CreateTlsContext()
 				{
 					auto ctx = SSL_CTX_new(TLSv1_2_client_method());
@@ -31,6 +32,7 @@ namespace System
 						SSL_CTX_free(ctx);
 					});
 				}
+				*/
 			}
 
 			HttpClient::HttpClient()
@@ -48,9 +50,12 @@ namespace System
 			HttpResponse HttpClient::Post(const System::Net::Url & url)
 			{
 				// TODO How to check if url is secure or not?
-				auto socket = (url.getScheme() == "https")
+
+				/*std::shared_ptr<sockets::ISocket> socket = (url.getScheme() == "https")
 					? std::make_shared<sockets::TlsSocket>(details::CreateTlsContext())
-					: std::make_shared<sockets::Socket>();
+					: std::make_shared<sockets::Socket>();*/
+
+				std::shared_ptr<sockets::ISocket> socket = std::make_shared<sockets::Socket>();
 
 				socket->Connect(url.getHost(), url.getPort());
 	

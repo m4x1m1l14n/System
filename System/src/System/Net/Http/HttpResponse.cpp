@@ -9,7 +9,7 @@ namespace System
 	{
 		namespace Http
 		{
-			HttpResponse::HttpResponse(const std::string & data, const System::Net::Sockets::Socket_ptr socket)
+			HttpResponse::HttpResponse(const std::string & data, const std::shared_ptr<System::Net::Sockets::ISocket> socket)
 			{
 				size_t tail = data.find(HttpHeaders::HeadersTerminator);
 				if (tail == std::string::npos)

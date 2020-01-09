@@ -296,7 +296,7 @@ namespace System
 			return CompareCaseInsensitive(lhs, rhs);
 		}
 
-#ifdef _WIN32
+#if defined(_WIN32) && 0
 		inline bool CompareCaseInsensitive(const std::wstring& a, const std::wstring& b)
 		{
 			return (

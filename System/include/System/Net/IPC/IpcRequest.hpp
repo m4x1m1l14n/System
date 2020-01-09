@@ -1,5 +1,5 @@
-#ifndef __IPC_REQUEST_HPP__
-#define __IPC_REQUEST_HPP__
+#ifndef __SYSTEM_NET_IPC_REQUEST_HPP__
+#define __SYSTEM_NET_IPC_REQUEST_HPP__
 
 #include <System/Net/IPC/IpcMessage.hpp>
 
@@ -13,18 +13,18 @@ namespace System
 				: public IpcMessage
 			{
 			public:
-				IpcRequest(const std::uint64_t id, const json11::Json& data, const TimeSpan& timeout)
+				IpcRequest(const std::uint64_t id, const std::string& data, const TimeSpan& timeout)
 					: IpcMessage(id, data, timeout)
 				{
 
 				}
 
-				void SetResult(const json11::Json& result)
+				void SetResult(const std::string& result)
 				{
 					m_promise.set_value(result);
 				}
 
-				json11::Json Wait()
+				std::string Wait()
 				{
 					auto future = m_promise.get_future();
 
@@ -47,10 +47,10 @@ namespace System
 				}
 
 			private:
-				std::promise<json11::Json> m_promise;
+				std::promise<std::string> m_promise;
 			};
 		}
 	}
 }
 
-#endif // __IPC_REQUEST_HPP__
+#endif // __SYSTEM_NET_IPC_REQUEST_HPP__

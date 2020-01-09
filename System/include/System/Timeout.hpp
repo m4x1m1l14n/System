@@ -11,10 +11,11 @@ namespace System
 		static const Timeout Zero;
 
 	protected:
-		Timeout();
 		Timeout(unsigned long long time);
 
 	public:
+		Timeout();
+
 		virtual ~Timeout();
 
 		static Timeout ElapseAfter(unsigned long long milliseconds);

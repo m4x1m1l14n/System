@@ -1,13 +1,13 @@
-#ifndef __IPC_MESSAGE_HPP__
-#define __IPC_MESSAGE_HPP__
+#ifndef __SYSTEM_NET_IPC_MESSAGE_HPP__
+#define __SYSTEM_NET_IPC_MESSAGE_HPP__
 
 #include <System/Timeout.hpp>
 #include <System/TimeSpan.hpp>
 #include <System/TimeoutException.hpp>
 
-#include <future>
+#include <System/Net/IPC/IpcCommon.hpp>
 
-// TODO Remove JSON dependency, use std::string for payload
+#include <future>
 
 namespace System
 {
@@ -32,18 +32,18 @@ namespace System
 					return m_timeout.GetIsElapsed();
 				}
 
-				const json11::Json& Data() const
+				const std::string& Data() const
 				{
 					return m_data;
 				}
 
-				std::uint64_t Id() const
+				IpcMessageId Id() const
 				{
 					return m_id;
 				}
 
 			protected:
-				IpcMessage(const std::uint64_t id, const json11::Json& data, const TimeSpan& timeout)
+				IpcMessage(const IpcMessageId id, const std::string& data, const TimeSpan& timeout)
 					: m_id(id)
 					, m_data(data)
 					, m_timeout((timeout == TimeSpan::MaxValue()) ? Timeout::CreateInfinite() : Timeout::ElapseAfter(timeout))
@@ -52,12 +52,14 @@ namespace System
 				}
 
 			protected:
-				std::uint64_t m_id;
-				json11::Json m_data;
+				IpcMessageId m_id;
+				std::string m_data;
 				System::Timeout m_timeout;
 			};
+
+			typedef std::shared_ptr<IpcMessage> IpcMessage_ptr;
 		}
 	}
 }
 
-#endif // __IPC_MESSAGE_HPP__
+#endif // __SYSTEM_NET_IPC_MESSAGE_HPP__

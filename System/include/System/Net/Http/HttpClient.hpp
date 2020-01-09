@@ -2,6 +2,7 @@
 
 #include <System/Net/Url.hpp>
 #include <System/Net/Http/HttpResponse.hpp>
+#include <System/Net/Http/HttpRequest.hpp>
 
 namespace System
 {

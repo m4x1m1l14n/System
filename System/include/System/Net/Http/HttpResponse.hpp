@@ -64,7 +64,7 @@ namespace System
 				HttpStatusCode StatusCode() const;
 
 			private:
-				HttpResponse(const std::string& data, const System::Net::Sockets::Socket_ptr socket);
+				HttpResponse(const std::string& data, const std::shared_ptr<System::Net::Sockets::ISocket> socket);
 				HttpResponse(const std::string& statusLineData, const std::string& headersData);
 				HttpResponse(const std::string& statusLineData, const std::string& headersData, const HttpContent& content);
 

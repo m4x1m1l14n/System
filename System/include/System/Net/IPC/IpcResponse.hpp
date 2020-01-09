@@ -1,5 +1,5 @@
-#ifndef __IPC_RESPONSE_HPP__
-#define __IPC_RESPONSE_HPP__
+#ifndef __SYSTEM_NET_IPC_RESPONSE_HPP__
+#define __SYSTEM_NET_IPC_RESPONSE_HPP__
 
 #include <System/Net/IPC/IpcMessage.hpp>
 
@@ -13,7 +13,7 @@ namespace System
 				: public IpcMessage
 			{
 			public:
-				IpcResponse(const std::uint64_t id, const json11::Json& data, const TimeSpan& timeout)
+				IpcResponse(const std::uint64_t id, const std::string& data, const TimeSpan& timeout)
 					: IpcMessage(id, data, timeout)
 				{
 
@@ -53,4 +53,4 @@ namespace System
 	}
 }
 
-#endif // __IPC_RESPONSE_HPP__
+#endif // __SYSTEM_NET_IPC_RESPONSE_HPP__

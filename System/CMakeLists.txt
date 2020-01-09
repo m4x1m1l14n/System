@@ -33,6 +33,12 @@ else()
 file (GLOB _inc_Linux "include/Linux/*.h*")
 endif()
 
+#
+# Temporarily excludes TlsSocket class from build
+#
+list (FILTER _include_Net_Sockets EXCLUDE REGEX "TlsSocket")
+list (FILTER _src_Net_Sockets EXCLUDE REGEX "TlsSocket")
+
 # Set Properties->General->Configuration Type to Application(.exe)
 # Creates app.exe with the listed sources (main.cpp)
 # Adds sources to the Solution Explorer

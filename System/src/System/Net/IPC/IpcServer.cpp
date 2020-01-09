@@ -1,5 +1,9 @@
 #include <System/Net/IPC/IpcServer.hpp>
 
+#include <System/Net/IPC/IpcResponse.hpp>
+
+#include <memory>
+
 namespace System
 {
 	namespace Net
@@ -25,11 +29,11 @@ namespace System
 				* @param buffer	Non const reference to buffer containing data received from network stream.
 				*				After successfull message parse, message data is trimed off from
 				*				this buffer.
-				* @param data	Non const reference to variable that will receive JSON parsed from message payload
+				* @param data	Non const reference to variable that will receive message payload
 				* @return Whether complete message was present or not in provided input buffer
 				* @warning Throws when buffer contains invalid data
 				*/
-				static bool PeekMessageFromBuffer(std::string& buffer, json11::Json& data)
+				static bool PeekMessageFromBuffer(std::string& buffer, std::string& data)
 				{
 					// Check if buffer starts with message start indicator
 					// if not, throw exception to remove this connection
@@ -52,20 +56,44 @@ namespace System
 						return false;
 					}
 
-					const auto& payload = buffer.substr(IpcMessageHeaderSize, payloadLen);
-
-					std::string error;
-					const auto json = json11::Json::parse(payload, error);
-
-					if (!error.empty())
-					{
-						throw std::runtime_error("Message data is not a valid JSON! Error: " + error);
-					}
+					data = buffer.substr(IpcMessageHeaderSize, payloadLen);
 
 					buffer.erase(0, messageLen);
-					data = json;
 
 					return true;
+				}
+
+				static std::string CreateFrameFromMessage(const IpcMessage_ptr message)
+				{
+					const auto messageId = message->Id();
+					const auto& payload = message->Data();
+					const auto payloadLen = static_cast<IpcMessageLength>(payload.length());
+
+					std::string frame;
+
+					const auto frameSize = IpcMessageHeaderSize + sizeof(messageId) + payloadLen;
+
+					frame.reserve(frameSize);
+
+					frame = IpcMessageStart;
+					frame.append(reinterpret_cast<const char*>(&payloadLen), sizeof(payloadLen));
+					frame.append(reinterpret_cast<const char*>(&messageId), sizeof(messageId));
+					frame.append(payload);
+
+					return frame;
+				}
+
+				static void ParseMessage(const std::string& message, IpcMessageId& messageId, std::string& payload)
+				{
+					const auto minMessageLen = sizeof(IpcMessageId);
+
+					if (message.length() < minMessageLen)
+					{
+						throw std::runtime_error("Message does not meet required minimal length.");
+					}
+
+					messageId = *reinterpret_cast<const IpcMessageId*>(message.data());
+					payload = message.substr(sizeof(IpcMessageId));
 				}
 
 				inline timeval CreateTimeval(const System::TimeSpan& timeout)
@@ -132,7 +160,7 @@ namespace System
 				if (m_workerThread.joinable()) { m_workerThread.join(); }
 			}
 
-			json11::Json IpcServer::SendRequest(const IpcClientId clientId, const json11::Json & data, const TimeSpan & timeout)
+			std::string IpcServer::SendRequest(const IpcClientId clientId, const std::string & data, const TimeSpan & timeout)
 			{
 				if (m_terminateEvent->IsSet())
 				{
@@ -164,7 +192,7 @@ namespace System
 				return request->Wait();
 			}
 
-			void IpcServer::SendResponse(const IpcClientId clientId, const IpcMessageId messageId, const json11::Json & data, const TimeSpan & timeout)
+			void IpcServer::SendResponse(const IpcClientId clientId, const IpcMessageId messageId, const std::string & data, const TimeSpan & timeout)
 			{
 				if (m_terminateEvent->IsSet())
 				{
@@ -233,8 +261,9 @@ namespace System
 
 						auto sock = static_cast<SOCKET>(*serverSocket);
 
-						int maxfds = sock + 1;
+						auto maxfds = static_cast<int>(sock) + 1;
 
+						// Handle exceptions from caller code
 						try
 						{
 							m_pDispatcher->IpcServer_Opened();
@@ -361,25 +390,24 @@ namespace System
 											auto& client = iter->second;
 											auto& clientSocket = client->socket;
 
-											// Receive data from client
-											// TODO Read with ReadAvailable() implementation
-											const auto& data = clientSocket->Read(); // TODO timeout, terminate handle
+											const auto& data = clientSocket->ReadAvailable();
 
 											assert(!data.empty());
 
 											client->rxBuffer.append(data);
 
-											json11::Json json;
+											std::string payload;
 
-											auto completeMessage = details::PeekMessageFromBuffer(client->rxBuffer, json);
+											auto completeMessage = details::PeekMessageFromBuffer(client->rxBuffer, payload);
 											if (completeMessage)
 											{
-												if (!json["client-id"].is_number())
+												// Payload during registration contains client-id, which is 32bit number
+												if (payload.length() != 4)
 												{
-													throw std::runtime_error("Missing registration required attribute \"client-id\"");
+													throw std::runtime_error("Wrong registration payload!");
 												}
-
-												const auto clientId = static_cast<IpcClientId>(json["client-id"].uint64_value());
+												
+												const auto clientId = *reinterpret_cast<const IpcClientId*>(payload.data());
 
 												{
 													// Enqueue client to worker thread
@@ -574,15 +602,17 @@ namespace System
 
 											client->rxBuffer.append(data);
 
-											json11::Json json;
+											std::string message;
 
-											auto complete = details::PeekMessageFromBuffer(client->rxBuffer, json);
+											auto complete = details::PeekMessageFromBuffer(client->rxBuffer, message);
 											if (complete)
 											{
 												const auto& clientId = iter->first;
 
-												const auto messageId = static_cast<IpcMessageId>(json["msg-id"].uint64_value());
-												const auto& data = json["data"];
+												IpcMessageId messageId;
+												std::string payload;
+
+												details::ParseMessage(message, messageId, payload);
 
 												std::shared_ptr<IpcRequest> request;
 
@@ -598,7 +628,7 @@ namespace System
 
 												if (request)
 												{
-													request->SetResult(json);
+													request->SetResult(payload);
 												}
 												else
 												{
@@ -651,23 +681,7 @@ namespace System
 
 											const auto& message = client->txQueue.front();
 
-											// TODO
-											//	Create buffer from message
-											json11::Json json = json11::Json::object({
-												{ "msg-id", message->Id() },
-												{ "data", message->Data() }
-												});
-
-											const auto& data = json.dump();
-											const IpcMessageLength dataLen = data.length();
-
-											auto& buffer = client->txBuffer;
-
-											buffer.reserve(IpcMessageHeaderSize + dataLen);
-
-											buffer = IpcMessageStart;
-											buffer.append(reinterpret_cast<const char*>(&dataLen), sizeof(dataLen));
-											buffer.append(data);
+											client->txBuffer = details::CreateFrameFromMessage(message);
 										}
 
 										// tx buffer here cannot be empty

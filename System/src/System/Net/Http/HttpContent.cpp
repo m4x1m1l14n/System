@@ -130,7 +130,7 @@ namespace System
 
 			}
 
-			HttpContent::HttpContent(const std::string & data, System::Net::Sockets::Socket_ptr socket)
+			HttpContent::HttpContent(const std::string & data, std::shared_ptr<System::Net::Sockets::ISocket> socket)
 				: m_buffer(data)
 				, m_socket(socket)
 			{

@@ -1,7 +1,5 @@
 #include <System/Net/Sockets/Socket.hpp>
 
-#include <openssl/ssl.h>
-
 #include <WS2tcpip.h>
 #include <assert.h>
 
@@ -305,7 +303,7 @@ namespace System
 
 			void Socket::WriteAll(const void * data, size_t len, const Timeout & timeout, const ManualResetEvent_ptr terminateEvent)
 			{
-				int tx_total = 0;
+				size_t tx_total = 0;
 
 				do
 				{

@@ -3,8 +3,6 @@
 
 #include <string>
 
-#include <json11.hpp>
-
 namespace System
 {
 	namespace Net
@@ -17,7 +15,7 @@ namespace System
 				// TODO Define as pure virtuals
 				virtual void IpcClient_OnConnected() { }
 				virtual void IpcClient_OnError(const std::string&/* error*/) { }
-				virtual void IpcClient_OnMessage(const IpcMessageId/* id*/, const json11::Json&/* json*/) { }
+				virtual void IpcClient_OnMessage(const IpcMessageId/* id*/, const std::string&/* data*/) { }
 				virtual void IpcClient_OnDisconnected() { }
 			};
 		}

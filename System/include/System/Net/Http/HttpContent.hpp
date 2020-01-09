@@ -25,10 +25,10 @@ namespace System
 
 			private:
 				HttpContent(const std::string& data);
-				HttpContent(const std::string& data, System::Net::Sockets::Socket_ptr socket);
+				HttpContent(const std::string& data, std::shared_ptr<System::Net::Sockets::ISocket> socket);
 
 			private:
-				System::Net::Sockets::Socket_ptr m_socket;
+				std::shared_ptr<System::Net::Sockets::ISocket> m_socket;
 				std::string m_buffer;
 			};
 		}

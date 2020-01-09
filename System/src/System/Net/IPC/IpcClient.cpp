@@ -1,7 +1,5 @@
 #include <System/Net/IPC/IpcClient.hpp>
 
-#include <json11.hpp>
-
 #include <iostream>
 
 using namespace System::Threading;
@@ -13,9 +11,13 @@ namespace System
 	{
 		namespace IPC
 		{
-			namespace details
+			namespace internal
 			{
-
+				class ipcmessage
+				{
+					IpcMessageId id;
+					std::string payload;
+				};
 			}
 
 			std::atomic<std::uint32_t> IpcClient::s_instanceCounter = 1;
@@ -65,12 +67,12 @@ namespace System
 				return m_clientId;
 			}
 
-			json11::Json IpcClient::SendRequest(const json11::Json& data)
+			std::string IpcClient::SendRequest(const std::string& data)
 			{
 				return this->SendRequest(data, TimeSpan::MaxValue());
 			}
 
-			json11::Json IpcClient::SendRequest(const json11::Json& data, const TimeSpan & timeout)
+			std::string IpcClient::SendRequest(const std::string& data, const TimeSpan & timeout)
 			{
 				if (m_terminateEvent->IsSet())
 				{
@@ -92,12 +94,12 @@ namespace System
 				return request->Wait();
 			}
 
-			void IpcClient::SendResponse(const IpcMessageId messageId, const json11::Json& data)
+			void IpcClient::SendResponse(const IpcMessageId messageId, const std::string& data)
 			{
 				return this->SendResponse(messageId, data, TimeSpan::MaxValue());
 			}
 
-			void IpcClient::SendResponse(const IpcMessageId messageId, const json11::Json& data, const TimeSpan & timeout)
+			void IpcClient::SendResponse(const IpcMessageId messageId, const std::string& data, const TimeSpan & timeout)
 			{
 				if (m_terminateEvent->IsSet())
 				{
@@ -154,37 +156,26 @@ namespace System
 						{
 							const auto& message = this->ReadMessage();
 
-							std::string err;
-							auto json = json11::Json::parse(message, err);
-							if (err.empty())
+							// TODO Parse message ID from received message
+							std::shared_ptr<IpcRequest> request;
+
 							{
-								const auto id = json["msg-id"].uint64_value();
-								const auto& data = json["data"];
+								std::lock_guard<std::mutex> guard(m_requestQueueLock);
 
-								std::shared_ptr<IpcRequest> request;
-
+								auto iter = m_requestQueue.find(id);
+								if (iter != m_requestQueue.end())
 								{
-									std::lock_guard<std::mutex> guard(m_requestQueueLock);
+									request = iter->second;
+								}
+							}
 
-									auto iter = m_requestQueue.find(id);
-									if (iter != m_requestQueue.end())
-									{
-										request = iter->second;
-									}
-								}
-
-								if (request)
-								{
-									request->SetResult(data);
-								}
-								else
-								{
-									m_pDispatcher->IpcClient_OnMessage(id, data);
-								}
+							if (request)
+							{
+								request->SetResult(data);
 							}
 							else
 							{
-								m_pDispatcher->IpcClient_OnError("Invalid JSON received. Data: " + message + ". Error: " + err);
+								m_pDispatcher->IpcClient_OnMessage(id, data);
 							}
 
 						} while (!m_terminateEvent->IsSet());

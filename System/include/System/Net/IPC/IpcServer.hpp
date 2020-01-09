@@ -2,7 +2,7 @@
 #define __IPC_SERVER_HPP__
 
 #include <System/Net/Sockets/Socket.hpp>
-
+#include <System/Net/IPC/IpcRequest.hpp>
 #include <System/Net/IPC/IpcServerDispatcher.hpp>
 
 #include <map>
@@ -26,7 +26,7 @@ namespace System
 					Timeout timeout;
 					std::string rxBuffer;
 					std::string txBuffer;
-					IpcMessageQueue txQueue;
+					std::deque<IpcMessage_ptr> txQueue;
 					bool connected;
 				};
 
@@ -47,9 +47,9 @@ namespace System
 
 				void Stop();
 
-				json11::Json SendRequest(const IpcClientId clientId, const json11::Json& data, const TimeSpan& timeout);
+				std::string SendRequest(const IpcClientId clientId, const std::string& data, const TimeSpan& timeout);
 
-				void SendResponse(const IpcClientId clientId, const IpcMessageId messageId, const json11::Json& data, const TimeSpan& timeout);
+				void SendResponse(const IpcClientId clientId, const IpcMessageId messageId, const std::string& data, const TimeSpan& timeout);
 
 			protected:
 				inline IpcMessageId GenerateRequestId(const IpcClientId clientId);
@@ -66,7 +66,7 @@ namespace System
 				std::mutex m_clientsLock;
 				std::atomic<bool> m_clientsChanged;
 
-				IpcRequestsQueue m_requests;
+				std::map<const IpcMessageId, std::shared_ptr<IpcRequest>> m_requests;
 				std::mutex m_requestsLock;
 
 				std::thread m_acceptThread;
@@ -75,6 +75,8 @@ namespace System
 				// Statics
 				static std::atomic<std::uint32_t> s_messageIdIterator;
 			};
+
+			typedef std::shared_ptr<IpcServer> IpcServer_ptr;
 		}
 	}
 }

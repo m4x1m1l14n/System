@@ -18,7 +18,7 @@ namespace System
 				virtual void IpcServer_Closed() { }
 
 				virtual void IpcServer_ClientConnected(const IpcClientId clientId) { }
-				virtual void IpcServer_OnMessage(const IpcClientId/* clientId*/, const IpcMessageId/* messageId*/, const json11::Json&/* message*/) { }
+				virtual void IpcServer_OnMessage(const IpcClientId/* clientId*/, const IpcMessageId/* messageId*/, const std::string&/* message*/) { }
 				virtual void IpcServer_ClientDisconnected(const IpcClientId clientId) { }
 
 				virtual void IpcServer_EncryptPayload(std::string&/* payload*/) { }
