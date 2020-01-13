@@ -28,6 +28,13 @@ namespace System
 				virtual size_t Write(const std::string& data, const System::Timeout& timeout, const System::Threading::ManualResetEvent_ptr terminateEvent) = 0;
 				virtual size_t Write(const void* data, size_t len, const System::Timeout& timeout, const System::Threading::ManualResetEvent_ptr terminateEvent) = 0;
 
+				// TODO
+				/*virtual void WriteAll(const std::string& data);
+				virtual void WriteAll(const std::string& data, const Timeout& timeout);
+				virtual void WriteAll(const std::string& data, const ManualResetEvent_ptr terminateEvent);
+				virtual void WriteAll(const std::string& data, const Timeout& timeout, const ManualResetEvent_ptr terminateEvent);
+				virtual void WriteAll(const void* data, size_t len, const Timeout& timeout, const ManualResetEvent_ptr terminateEvent);*/
+
 				virtual std::string Read() = 0;
 				virtual std::string Read(const System::Timeout& timeout) = 0;
 				virtual std::string Read(const System::Threading::ManualResetEvent_ptr terminateEvent) = 0;

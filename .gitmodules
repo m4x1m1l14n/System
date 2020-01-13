@@ -1,0 +1,6 @@
+[submodule "3rd/m4x1m1l14n/openssl.git"]
+	path = 3rd/m4x1m1l14n/openssl.git
+	url = git@github.com:m4x1m1l14n/openssl.git
+[submodule "3rd/m4x1m1l14n/Crypto.git"]
+	path = 3rd/m4x1m1l14n/Crypto.git
+	url = git@github.com:m4x1m1l14n/Crypto.git

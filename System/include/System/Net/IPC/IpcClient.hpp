@@ -1,7 +1,7 @@
 #ifndef __IPC_CLIENT_HPP__
 #define __IPC_CLIENT_HPP__
 
-#include <System/Net/IPC/IpcCommon.hpp>
+#include <System/Net/IPC/IpcDefines.hpp>
 #include <System/Net/IPC/IpcClientDispatcher.hpp>
 
 #include <System/Net/IPC/IpcRequest.hpp>
@@ -38,13 +38,16 @@ namespace System
 				// Getters
 				IpcClientId ClientId() const;
 
-				std::string SendRequest(const std::string& data);
-				std::string SendRequest(const std::string& data, const TimeSpan& timeout);
+				IpcRequest_ptr CreateRequest(const std::string& data, const Timeout& timeout);
+				IpcResponse_ptr CreateResponse(const IpcRequest_ptr request, const std::string& data, const Timeout& timeout);
+
+				IpcResponse_ptr SendRequest(const IpcRequest_ptr request);
 
 				void SendResponse(const IpcMessageId messageId, const std::string& data);
-				void SendResponse(const IpcMessageId messageId, const std::string& data, const TimeSpan& timeout);
+				void SendResponse(const IpcMessageId messageId, const std::string& data, const Timeout& timeout);
 
 			private:
+				IpcClientId CreateClientId();
 				inline IpcMessageId GenerateRequestId(const IpcClientId clientId);
 
 				void RxThread(std::string host, int port);

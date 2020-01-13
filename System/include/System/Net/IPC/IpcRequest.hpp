@@ -1,7 +1,9 @@
 #ifndef __SYSTEM_NET_IPC_REQUEST_HPP__
 #define __SYSTEM_NET_IPC_REQUEST_HPP__
 
+
 #include <System/Net/IPC/IpcMessage.hpp>
+
 
 namespace System
 {
@@ -13,7 +15,7 @@ namespace System
 				: public IpcMessage
 			{
 			public:
-				IpcRequest(const std::uint64_t id, const std::string& data, const TimeSpan& timeout)
+				IpcRequest(const std::uint64_t id, const std::string& data, const Timeout& timeout)
 					: IpcMessage(id, data, timeout)
 				{
 
@@ -49,6 +51,9 @@ namespace System
 			private:
 				std::promise<std::string> m_promise;
 			};
+
+			
+			typedef std::shared_ptr<IpcRequest> IpcRequest_ptr;
 		}
 	}
 }

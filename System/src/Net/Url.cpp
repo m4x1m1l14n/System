@@ -1,6 +1,7 @@
 #include <System/Net/Url.hpp>
 
 #include <map>
+#include <stdexcept>
 
 /// <summary>
 ///		Custom case insensitive <c>std::less</c> comparator for map with wstring key

@@ -7,6 +7,7 @@
 #include <assert.h>
 
 #include <sys/stat.h>
+#include <system_error>
 
 using namespace System::Text;
 

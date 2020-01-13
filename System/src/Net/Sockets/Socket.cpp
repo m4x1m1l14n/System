@@ -214,7 +214,10 @@ namespace System
 					throw SocketException(::WSAGetLastError());
 				}
 
-				return std::make_shared<Socket>(sock);
+				// NOTE
+				//	Cannot use std::make_shared, because compiler failed with
+				//	error that it cannot access protected Socket ctor
+				return std::shared_ptr<Socket>(new Socket(sock));
 			}
 
 			concurrency::task<void> Socket::ConnectAsync(const std::string& host, int port)
@@ -399,6 +402,10 @@ namespace System
 				fd_set readfds;
 				fd_set writefds;
 				fd_set errorfds;
+
+				FD_ZERO(&readfds);
+				FD_ZERO(&writefds);
+				FD_ZERO(&errorfds);
 
 				for (const auto& socket : read) { FD_SET(static_cast<SOCKET>(*socket), &readfds); }
 				for (const auto& socket : write) { FD_SET(static_cast<SOCKET>(*socket), &writefds); }

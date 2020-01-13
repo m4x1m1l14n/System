@@ -13,6 +13,8 @@
 
 #include <sstream>
 
+using namespace m4x1m1l14n;
+
 using namespace System::Net::Http;
 using namespace System::Net::Sockets;
 
@@ -72,12 +74,14 @@ namespace System
 				}
 			}
 
-			void WebSocket::Write(const void * data, size_t len, const Timeout & timeout, const ManualResetEvent_ptr terminateEvent)
+			// TODO Change to WriteAll!
+			size_t WebSocket::Write(const void * data, size_t len, const Timeout & timeout, const ManualResetEvent_ptr terminateEvent)
 			{
 				const uint64_t max_frame_len = 0x4000; // max frame size 16K
 				const unsigned char is_masked = 1;
 				const unsigned char rsv1 = 0, rsv2 = 0, rsv3 = 0;
 				unsigned char is_final;
+				// TODO Allocate on heap depending on data length!
 				unsigned char frame_payload_data[max_frame_len];
 				WebSocketOpCode opcode;
 
@@ -139,6 +143,8 @@ namespace System
 
 					m_socket->Write(reinterpret_cast<char*>(frame_payload_data), static_cast<int>(frame_payload_len), timeout, terminateEvent);
 				}
+
+				return 0;
 			}
 
 			std::string WebSocket::Read(const Timeout & timeout, const ManualResetEvent_ptr terminateEvent)

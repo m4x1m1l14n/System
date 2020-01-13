@@ -2,7 +2,10 @@
 
 #include <System/Net/IPC/IpcResponse.hpp>
 
+#include "IpcCommon.hpp"
+
 #include <memory>
+
 
 namespace System
 {
@@ -24,43 +27,12 @@ namespace System
 				}
 
 				/**
-				* Parse and peek message from buffer of incoming data
-				*
-				* @param buffer	Non const reference to buffer containing data received from network stream.
-				*				After successfull message parse, message data is trimed off from
-				*				this buffer.
-				* @param data	Non const reference to variable that will receive message payload
-				* @return Whether complete message was present or not in provided input buffer
-				* @warning Throws when buffer contains invalid data
+				* 
 				*/
-				static bool PeekMessageFromBuffer(std::string& buffer, std::string& data)
+				static IpcMessageId ParseFrame(const std::string& frame, std::string& message)
 				{
-					// Check if buffer starts with message start indicator
-					// if not, throw exception to remove this connection
-					if (buffer.front() != IpcMessageStart)
-					{
-						throw std::runtime_error("Message in buffer not starting with message indicator");
-					}
-
-					// Check if underlying buffer holds at least whole message header
-					if (buffer.size() <= IpcMessageHeaderSize)
-					{
-						return false;
-					}
-
-					// Parse message header length
-					const std::uint32_t payloadLen = *reinterpret_cast<std::uint32_t*>(&buffer[1]);
-					const std::uint32_t messageLen = IpcMessageHeaderSize + payloadLen;
-					if (buffer.size() < messageLen)
-					{
-						return false;
-					}
-
-					data = buffer.substr(IpcMessageHeaderSize, payloadLen);
-
-					buffer.erase(0, messageLen);
-
-					return true;
+					// TODO implement
+					return 0;
 				}
 
 				static std::string CreateFrameFromMessage(const IpcMessage_ptr message)
@@ -81,19 +53,6 @@ namespace System
 					frame.append(payload);
 
 					return frame;
-				}
-
-				static void ParseMessage(const std::string& message, IpcMessageId& messageId, std::string& payload)
-				{
-					const auto minMessageLen = sizeof(IpcMessageId);
-
-					if (message.length() < minMessageLen)
-					{
-						throw std::runtime_error("Message does not meet required minimal length.");
-					}
-
-					messageId = *reinterpret_cast<const IpcMessageId*>(message.data());
-					payload = message.substr(sizeof(IpcMessageId));
 				}
 
 				inline timeval CreateTimeval(const System::TimeSpan& timeout)
@@ -131,12 +90,19 @@ namespace System
 				, m_pDispatcher(pDispatcher)
 				, m_terminateEvent(std::make_shared<ManualResetEvent>())
 			{
+#if 0
 				if (pDispatcher == nullptr)
 				{
 					throw std::invalid_argument("dispatcher cannot be null");
 				}
+#endif
 			}
 
+			/**
+			* Class dtor
+			*
+			* Stops IPC server if not already stopped
+			*/
 			IpcServer::~IpcServer()
 			{
 				this->Stop();
@@ -160,14 +126,35 @@ namespace System
 				if (m_workerThread.joinable()) { m_workerThread.join(); }
 			}
 
-			std::string IpcServer::SendRequest(const IpcClientId clientId, const std::string & data, const TimeSpan & timeout)
+			IpcRequest_ptr IpcServer::CreateRequest(const IpcClientId clientId, const std::string& data)
+			{
+				return this->CreateRequest(clientId, data, Timeout::Infinite);
+			}
+
+
+			IpcRequest_ptr IpcServer::CreateRequest(const IpcClientId clientId, const std::string& data, const System::Timeout& timeout)
+			{
+				const auto id = this->GenerateRequestId(clientId);
+
+				return std::make_shared<IpcRequest>(id, data, timeout);
+			}
+
+			IpcResponse_ptr IpcServer::CreateResponse(const IpcClientId clientId, const IpcRequest_ptr request, const std::string& data)
+			{
+				return this->CreateResponse(clientId, request, data, Timeout::Infinite);
+			}
+
+			IpcResponse_ptr IpcServer::CreateResponse(const IpcClientId clientId, const IpcRequest_ptr request, const std::string& data, const System::Timeout& timeout)
+			{
+				return IpcResponse_ptr();
+			}
+
+			std::string IpcServer::SendRequest(const IpcClientId clientId, const IpcRequest_ptr request)
 			{
 				if (m_terminateEvent->IsSet())
 				{
-					throw std::runtime_error("IPC client stopped");
+					throw std::runtime_error("IPC client is stopped");
 				}
-
-				std::shared_ptr<IpcRequest> request;
 
 				{
 					std::lock_guard<std::mutex> guard(m_clientsLock);
@@ -181,10 +168,6 @@ namespace System
 					{
 						const auto& client = iter->second;
 
-						const auto id = this->GenerateRequestId(clientId);
-
-						request = std::make_shared<IpcRequest>(id, data, timeout);
-
 						client->txQueue.push_back(request);
 					}
 				}
@@ -192,14 +175,12 @@ namespace System
 				return request->Wait();
 			}
 
-			void IpcServer::SendResponse(const IpcClientId clientId, const IpcMessageId messageId, const std::string & data, const TimeSpan & timeout)
+			void IpcServer::SendResponse(const IpcClientId clientId, const IpcResponse_ptr response)
 			{
 				if (m_terminateEvent->IsSet())
 				{
 					throw std::runtime_error("IPC client stopped");
 				}
-
-				std::shared_ptr<IpcResponse> response;
 
 				{
 					std::lock_guard<std::mutex> guard(m_clientsLock);
@@ -211,10 +192,6 @@ namespace System
 					}
 					else
 					{
-						const auto id = this->GenerateRequestId(clientId);
-
-						response = std::make_shared<IpcResponse>(id, data, timeout);
-
 						const auto& client = iter->second;
 
 						client->txQueue.push_back(response);
@@ -236,6 +213,7 @@ namespace System
 			{
 				return IpcServerRequestFlag | static_cast<std::uint64_t>(clientId) << 31 | (s_messageIdIterator++ & 0x7fffffff);
 			}
+
 
 			void IpcServer::AcceptThread(int port)
 			{
@@ -310,6 +288,7 @@ namespace System
 							timeval tv = CreateTimeval(TimeSpan::FromMilliseconds(100));
 #endif // _WIN32
 
+							// Wait for socket changes
 							int err = ::select(maxfds, &readfds, &writefds, &errorfds, &tv);
 							if (err == 0)
 							{
@@ -398,7 +377,7 @@ namespace System
 
 											std::string payload;
 
-											auto completeMessage = details::PeekMessageFromBuffer(client->rxBuffer, payload);
+											auto completeMessage = details::PeekFrameFromBuffer(client->rxBuffer, payload);
 											if (completeMessage)
 											{
 												// Payload during registration contains client-id, which is 32bit number
@@ -413,12 +392,18 @@ namespace System
 													// Enqueue client to worker thread
 													std::lock_guard<std::mutex> guard(m_clientsLock);
 
+													//
 													// TODO merge in case client was connected before
+													//
 													m_clients[clientId] = client;
 												}
 
-												// Invoke client connected callback
-												m_pDispatcher->IpcServer_ClientConnected(clientId);
+												// Invoke client connected callback, but care for exceptions in user code
+												try
+												{
+													m_pDispatcher->IpcServer_ClientConnected(clientId);
+												}
+												catch (const std::exception&) { }
 
 												// We moved client after successfull registration
 												// to connected clients, so we can erase it from pending
@@ -468,6 +453,7 @@ namespace System
 
 				} while (m_terminateEvent->WaitOne(waitTime) == EventWaitHandle::WaitTimeout);
 			}
+
 
 			void IpcServer::WorkerThread()
 			{
@@ -604,7 +590,7 @@ namespace System
 
 											std::string message;
 
-											auto complete = details::PeekMessageFromBuffer(client->rxBuffer, message);
+											auto complete = details::PeekFrameFromBuffer(client->rxBuffer, message);
 											if (complete)
 											{
 												const auto& clientId = iter->first;

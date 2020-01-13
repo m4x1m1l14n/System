@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 #include <exception>
+#include <string>
 
 namespace System
 {

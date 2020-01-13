@@ -288,12 +288,12 @@ namespace System
 
 		inline bool CompareCaseInsensitive(const std::wstring& lhs, const std::wstring& rhs)
 		{
-			return CompareCaseInsensitive(lhs, rhs);
+			return CompareCaseInsensitive<wchar_t>(lhs, rhs);
 		}
 
 		inline bool CompareCaseInsensitive(const std::string& lhs, const std::string& rhs)
 		{
-			return CompareCaseInsensitive(lhs, rhs);
+			return CompareCaseInsensitive<char>(lhs, rhs);
 		}
 
 #if defined(_WIN32) && 0

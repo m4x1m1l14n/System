@@ -1,6 +1,7 @@
 #include <System/Diagnostics/FileVersionInfo.hpp>
 
 #include <Windows.h>
+#include <system_error>
 
 unsigned char* _GetFileVersionInfo(const std::wstring& fileName)
 {

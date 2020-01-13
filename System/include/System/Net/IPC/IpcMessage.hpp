@@ -5,7 +5,7 @@
 #include <System/TimeSpan.hpp>
 #include <System/TimeoutException.hpp>
 
-#include <System/Net/IPC/IpcCommon.hpp>
+#include <System/Net/IPC/IpcDefines.hpp>
 
 #include <future>
 
@@ -43,10 +43,10 @@ namespace System
 				}
 
 			protected:
-				IpcMessage(const IpcMessageId id, const std::string& data, const TimeSpan& timeout)
+				IpcMessage(const IpcMessageId id, const std::string& data, const Timeout& timeout)
 					: m_id(id)
 					, m_data(data)
-					, m_timeout((timeout == TimeSpan::MaxValue()) ? Timeout::CreateInfinite() : Timeout::ElapseAfter(timeout))
+					, m_timeout(timeout)
 				{
 
 				}

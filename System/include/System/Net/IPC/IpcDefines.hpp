@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __SYSTEM_NET_IPC_DEFINES_HPP__
+#define __SYSTEM_NET_IPC_DEFINES_HPP__
 
 #include <cstdint>
 #include <map>
@@ -11,10 +12,10 @@ namespace System
 		namespace IPC
 		{
 			/*
-				| 31 .... 15 | 14 ...... 0 |
+				| 63 .... 32 | 31 ...... 0 |
 				| Process ID | Instance ID |
 			*/
-			typedef std::uint32_t IpcClientId;
+			typedef std::uint64_t IpcClientId;
 
 			typedef std::uint64_t IpcMessageId;
 			typedef std::uint32_t IpcMessageLength;
@@ -28,3 +29,5 @@ namespace System
 		}
 	}
 }
+
+#endif // __SYSTEM_NET_IPC_DEFINES_HPP__

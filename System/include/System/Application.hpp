@@ -1,12 +1,7 @@
 #pragma once
 
 #include <string>
-#include <experimental/filesystem>
-
-namespace std
-{
-	namespace filesystem = ::std::experimental::filesystem;
-}
+#include <filesystem>
 
 namespace System
 {

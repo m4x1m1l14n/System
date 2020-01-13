@@ -3,6 +3,7 @@
 
 #include <System/Net/Sockets/Socket.hpp>
 #include <System/Net/IPC/IpcRequest.hpp>
+#include <System/Net/IPC/IpcResponse.hpp>
 #include <System/Net/IPC/IpcServerDispatcher.hpp>
 
 #include <map>
@@ -47,9 +48,14 @@ namespace System
 
 				void Stop();
 
-				std::string SendRequest(const IpcClientId clientId, const std::string& data, const TimeSpan& timeout);
+				IpcRequest_ptr CreateRequest(const IpcClientId clientId, const std::string& data);
+				IpcRequest_ptr CreateRequest(const IpcClientId clientId, const std::string& data, const System::Timeout& timeout);
 
-				void SendResponse(const IpcClientId clientId, const IpcMessageId messageId, const std::string& data, const TimeSpan& timeout);
+				IpcResponse_ptr CreateResponse(const IpcClientId clientId, const IpcRequest_ptr request, const std::string& data);
+				IpcResponse_ptr CreateResponse(const IpcClientId clientId, const IpcRequest_ptr request, const std::string& data, const System::Timeout& timeout);
+
+				std::string SendRequest(const IpcClientId clientId, const IpcRequest_ptr request);
+				void SendResponse(const IpcClientId clientId, const IpcResponse_ptr response);
 
 			protected:
 				inline IpcMessageId GenerateRequestId(const IpcClientId clientId);

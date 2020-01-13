@@ -30,7 +30,7 @@ namespace System
 				WebSocket(const std::shared_ptr<SSL_CTX> ctx);
 
 				virtual void Connect(const std::string& host, int port, const Timeout& timeout, const ManualResetEvent_ptr terminateEvent) override;
-				virtual void Write(const void * data, size_t len, const Timeout & timeout, const ManualResetEvent_ptr terminateEvent) override;
+				virtual size_t Write(const void * data, size_t len, const Timeout & timeout, const ManualResetEvent_ptr terminateEvent) override;
 				virtual std::string Read(const Timeout& timeout, const ManualResetEvent_ptr terminateEvent) override;
 
 				// Chains
@@ -38,10 +38,10 @@ namespace System
 				virtual void Connect(const std::string& host, int port, const Timeout& timeout) override { return WebSocket::Connect(host, port, timeout, nullptr); }
 				virtual void Connect(const std::string& host, int port, const ManualResetEvent_ptr terminateEvent) override { return WebSocket::Connect(host, port, Timeout::Infinite, terminateEvent); }
 
-				virtual void Write(const std::string& data) override { return WebSocket::Write(data, Timeout::Infinite); }
-				virtual void Write(const std::string& data, const Timeout& timeout) override { return WebSocket::Write(data, timeout, nullptr); }
-				virtual void Write(const std::string& data, const ManualResetEvent_ptr terminateEvent) override { return WebSocket::Write(data, Timeout::Infinite, terminateEvent); }
-				virtual void Write(const std::string& data, const Timeout& timeout, const ManualResetEvent_ptr terminateEvent) override { return WebSocket::Write(data.c_str(), data.length(), timeout, terminateEvent); }
+				virtual size_t Write(const std::string& data) override { return WebSocket::Write(data, Timeout::Infinite); }
+				virtual size_t Write(const std::string& data, const Timeout& timeout) override { return WebSocket::Write(data, timeout, nullptr); }
+				virtual size_t Write(const std::string& data, const ManualResetEvent_ptr terminateEvent) override { return WebSocket::Write(data, Timeout::Infinite, terminateEvent); }
+				virtual size_t Write(const std::string& data, const Timeout& timeout, const ManualResetEvent_ptr terminateEvent) override { return WebSocket::Write(data.c_str(), data.length(), timeout, terminateEvent); }
 				
 				virtual std::string Read() override { return WebSocket::Read(Timeout::Infinite, nullptr); }
 				virtual std::string Read(const Timeout& timeout) override { return WebSocket::Read(timeout, nullptr); }

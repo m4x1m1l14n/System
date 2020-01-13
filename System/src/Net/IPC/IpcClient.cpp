@@ -1,9 +1,16 @@
 #include <System/Net/IPC/IpcClient.hpp>
 
+// TODO Move to sources. No need to publish this class
+#include <System/Net/IPC/IpcFrame.hpp>
+
+#include "IpcCommon.hpp"
+
 #include <iostream>
+
 
 using namespace System::Threading;
 using namespace System::Net::Sockets;
+
 
 namespace System
 {
@@ -11,15 +18,6 @@ namespace System
 	{
 		namespace IPC
 		{
-			namespace internal
-			{
-				class ipcmessage
-				{
-					IpcMessageId id;
-					std::string payload;
-				};
-			}
-
 			std::atomic<std::uint32_t> IpcClient::s_instanceCounter = 1;
 			std::atomic<std::uint32_t> IpcClient::s_messageIdIterator = 1;
 
@@ -48,7 +46,7 @@ namespace System
 					throw std::invalid_argument("dispatcher cannot be null");
 				}
 
-				m_clientId = static_cast<uint64_t>(::GetCurrentProcessId()) << 32 | s_instanceCounter++;
+				m_clientId = this->CreateClientId();
 			}
 
 			/**
@@ -67,21 +65,26 @@ namespace System
 				return m_clientId;
 			}
 
-			std::string IpcClient::SendRequest(const std::string& data)
+			IpcRequest_ptr IpcClient::CreateRequest(const std::string& data, const Timeout& timeout)
 			{
-				return this->SendRequest(data, TimeSpan::MaxValue());
+				const auto id = this->GenerateRequestId(m_clientId);
+
+				const auto& request = std::make_shared<IpcRequest>(id, data, timeout);
+
+				return request;
 			}
 
-			std::string IpcClient::SendRequest(const std::string& data, const TimeSpan & timeout)
+			IpcResponse_ptr IpcClient::CreateResponse(const IpcRequest_ptr request, const std::string& data, const Timeout& timeout)
+			{
+				return IpcResponse_ptr();
+			}
+
+			IpcResponse_ptr IpcClient::SendRequest(const IpcRequest_ptr request)
 			{
 				if (m_terminateEvent->IsSet())
 				{
 					throw std::runtime_error("IPC client stopped");
 				}
-
-				const auto id = this->GenerateRequestId(m_clientId);
-
-				const auto& request = std::make_shared<IpcRequest>(id, data, timeout);
 
 				{
 					std::lock_guard<std::mutex> guard(m_queueLock);
@@ -91,15 +94,18 @@ namespace System
 					m_queueChangedEvent->Set();
 				}
 
-				return request->Wait();
+				const auto& result = request->Wait();
+
+				// TODO Construct response pointer!
+				return IpcResponse_ptr();
 			}
 
 			void IpcClient::SendResponse(const IpcMessageId messageId, const std::string& data)
 			{
-				return this->SendResponse(messageId, data, TimeSpan::MaxValue());
+				return this->SendResponse(messageId, data, Timeout::Infinite);
 			}
 
-			void IpcClient::SendResponse(const IpcMessageId messageId, const std::string& data, const TimeSpan & timeout)
+			void IpcClient::SendResponse(const IpcMessageId messageId, const std::string& data, const Timeout & timeout)
 			{
 				if (m_terminateEvent->IsSet())
 				{
@@ -117,6 +123,14 @@ namespace System
 				}
 
 				response->Wait();
+			}
+
+			IpcClientId IpcClient::CreateClientId()
+			{
+				const auto processId = ::GetCurrentProcessId();
+				const auto clientId = static_cast<IpcClientId>(processId) << 32 | s_instanceCounter++;
+
+				return clientId;
 			}
 
 			inline IpcMessageId IpcClient::GenerateRequestId(const IpcClientId clientId)
@@ -154,7 +168,13 @@ namespace System
 
 						do
 						{
-							const auto& message = this->ReadMessage();
+							// TODO Rename to read freame
+							const auto& frame = this->ReadMessage();
+
+							IpcMessageId id;
+							std::string payload;
+
+							details::ParseMessage(frame, id, payload);
 
 							// TODO Parse message ID from received message
 							std::shared_ptr<IpcRequest> request;
@@ -171,11 +191,11 @@ namespace System
 
 							if (request)
 							{
-								request->SetResult(data);
+								request->SetResult(payload);
 							}
 							else
 							{
-								m_pDispatcher->IpcClient_OnMessage(id, data);
+								m_pDispatcher->IpcClient_OnMessage(id, payload);
 							}
 
 						} while (!m_terminateEvent->IsSet());
@@ -240,14 +260,9 @@ namespace System
 
 									try
 									{
-										json11::Json json = json11::Json::object({
-											{ "msg-id", message->Id() },
-											{ "data", message->Data() }
-										});
+										const auto frame = IpcFrame(message);
 
-										const auto& data = json.dump();
-
-										this->WriteMessage(socket, data);
+										this->WriteMessage(socket, frame.Data());
 
 										// Message sent successfully
 										if (message->IsRequest())
@@ -309,14 +324,11 @@ namespace System
 			*/
 			void IpcClient::Register(System::Net::Sockets::Socket_ptr socket)
 			{
-				const json11::Json json = json11::Json::object({
-					{ "msg-id", 0 },
-					{ "client-id", static_cast<std::uint64_t>(m_clientId) }
-				});
+				std::string data;
 
-				const auto& requestData = json.dump();
+				data.append(reinterpret_cast<const char*>(&m_clientId), sizeof(m_clientId));
 
-				this->WriteMessage(socket, requestData);
+				this->WriteMessage(socket, data);
 			}
 
 			void IpcClient::WriteMessage(Socket_ptr socket, const std::string & message)

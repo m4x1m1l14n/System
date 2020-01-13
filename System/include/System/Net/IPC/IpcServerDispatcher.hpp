@@ -1,7 +1,7 @@
 #ifndef __IPC_SERVER_DISPATCHER_HPP__
 #define __IPC_SERVER_DISPATCHER_HPP__
 
-#include <System/Net/IPC/IpcCommon.hpp>
+#include <System/Net/IPC/IpcDefines.hpp>
 
 #include <System/Net/Sockets/Socket.hpp>
 
