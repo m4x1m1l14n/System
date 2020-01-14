@@ -3,7 +3,7 @@
 
 
 #include <System/Net/IPC/IpcMessage.hpp>
-
+#include <System/Net/IPC/IpcFrame.hpp>
 
 namespace System
 {
@@ -19,11 +19,10 @@ namespace System
 				* @param buffer	Non const reference to buffer containing data received from network stream.
 				*				After successfull message parse, message data is trimed off from
 				*				this buffer.
-				* @param data	Non const reference to variable that will receive message payload
-				* @return Whether complete message was present or not in provided input buffer
+				* @return Parsed IPC frame from input buffer
 				* @warning Throws when buffer contains invalid data
 				*/
-				static bool PeekFrameFromBuffer(std::string& buffer, std::string& data)
+				static IpcFrame_ptr PeekFrameFromBuffer(std::string& buffer)
 				{
 					// Check if buffer starts with message start indicator
 					// if not, throw exception to remove this connection

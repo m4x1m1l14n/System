@@ -38,7 +38,7 @@ namespace System
 				static std::string CreateFrameFromMessage(const IpcMessage_ptr message)
 				{
 					const auto messageId = message->Id();
-					const auto& payload = message->Data();
+					const auto& payload = message->Payload();
 					const auto payloadLen = static_cast<IpcMessageLength>(payload.length());
 
 					std::string frame;

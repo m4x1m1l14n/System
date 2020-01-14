@@ -27,25 +27,66 @@ namespace System
 				virtual bool IsRequest() const = 0;
 				virtual bool IsResponse() const = 0;
 
+				static IpcMessage_ptr PeekFromBuffer(std::string& buffer)
+				{
+					// Check if buffer starts with frame start indicator
+					// if not, throw exception to remove this connection
+					if (buffer.front() != IpcMessageStart)
+					{
+						throw std::runtime_error("Frame in buffer not starting with correct indicator");
+					}
+
+					// Check if underlying buffer holds at least whole message header
+					if (buffer.size() < IpcMessageHeaderSize)
+					{
+						return IpcMessage_ptr();
+					}
+
+					const auto dataLen = *reinterpret_cast<const IpcMessageLength*>(&buffer[1]);
+					const auto messageLen = IpcMessageHeaderSize + dataLen;
+					if (buffer.size() < messageLen)
+					{
+						// We do not have enough data to parse whole frame
+						return IpcMessage_ptr();
+					}
+
+					const auto messageId = *reinterpret_cast<const IpcMessageId*>(&buffer[1 + sizeof(dataLen)]);
+
+					const auto& data = buffer.substr(0, messageLen);
+
+					buffer.erase(0, messageLen);
+				}
+
 				bool IsExpired() const
 				{
 					return m_timeout.GetIsElapsed();
 				}
 
-				const std::string& Data() const
+				const std::string& Payload() const
 				{
-					return m_data;
+					return m_payload;
 				}
 
-				IpcMessageId Id() const
+				const IpcMessageId Id() const
 				{
 					return m_id;
 				}
 
+				std::string Data()
+				{
+					if (m_data.empty())
+					{
+						m_data.reserve(IpcMessageHeaderSize + m_payload.length());
+
+					}
+
+					return m_data;
+				}
+
 			protected:
-				IpcMessage(const IpcMessageId id, const std::string& data, const Timeout& timeout)
+				IpcMessage(const IpcMessageId id, const std::string& payload, const Timeout& timeout)
 					: m_id(id)
-					, m_data(data)
+					, m_payload(payload)
 					, m_timeout(timeout)
 				{
 
@@ -53,8 +94,9 @@ namespace System
 
 			protected:
 				IpcMessageId m_id;
-				std::string m_data;
+				std::string m_payload;
 				System::Timeout m_timeout;
+				std::string m_data;
 			};
 
 			typedef std::shared_ptr<IpcMessage> IpcMessage_ptr;

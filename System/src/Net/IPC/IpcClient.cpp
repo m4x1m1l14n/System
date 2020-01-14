@@ -324,9 +324,20 @@ namespace System
 			*/
 			void IpcClient::Register(System::Net::Sockets::Socket_ptr socket)
 			{
-				std::string data;
+				std::string payload;
 
-				data.append(reinterpret_cast<const char*>(&m_clientId), sizeof(m_clientId));
+				payload.append(reinterpret_cast<const char*>(&m_clientId), sizeof(m_clientId));
+
+				// Register message always have message id 0
+				const auto id = IpcMessageId(0);
+				// TODO Registration timeout via define | via options class
+				const auto timeout = Timeout::ElapseAfter(TimeSpan::FromSeconds(5));
+
+				const auto message = std::make_shared<IpcRequest>(id, payload, timeout);
+
+				const auto frame = std::make_shared<IpcFrame>(message);
+
+				const auto data = frame->Data();
 
 				this->WriteMessage(socket, data);
 			}

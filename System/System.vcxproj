@@ -232,6 +232,7 @@
     <ClInclude Include="include\System\Net\IPC\IpcDefines.hpp" />
     <ClInclude Include="include\System\Net\IPC\IpcFrame.hpp" />
     <ClInclude Include="include\System\Net\IPC\IpcMessage.hpp" />
+    <ClInclude Include="include\System\Net\IPC\IpcOptions.hpp" />
     <ClInclude Include="include\System\Net\IPC\IpcRequest.hpp" />
     <ClInclude Include="include\System\Net\IPC\IpcResponse.hpp" />
     <ClInclude Include="include\System\Net\IPC\IpcServer.hpp" />
