@@ -15,8 +15,8 @@ namespace System
 				: public IpcMessage
 			{
 			public:
-				IpcResponse(const IpcMessageId id, const std::string& data, const Timeout& timeout)
-					: IpcMessage(id, data, timeout)
+				IpcResponse(const IpcMessageId id, const std::string& data)
+					: IpcMessage(id, data)
 				{
 
 				}

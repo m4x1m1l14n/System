@@ -38,10 +38,11 @@ namespace System
 				// Getters
 				IpcClientId ClientId() const;
 
-				IpcRequest_ptr CreateRequest(const std::string& data, const Timeout& timeout);
-				IpcResponse_ptr CreateResponse(const IpcRequest_ptr request, const std::string& data, const Timeout& timeout);
+				IpcRequest_ptr CreateRequest(const std::string& data);
+				IpcResponse_ptr CreateResponse(const IpcRequest_ptr request, const std::string& data);
 
 				IpcResponse_ptr SendRequest(const IpcRequest_ptr request);
+				IpcResponse_ptr SendRequest(const IpcRequest_ptr request, const Timeout& timeout);
 
 				void SendResponse(const IpcMessageId messageId, const std::string& data);
 				void SendResponse(const IpcMessageId messageId, const std::string& data, const Timeout& timeout);
@@ -55,8 +56,8 @@ namespace System
 
 				void Register(System::Net::Sockets::Socket_ptr socket);
 
-				void WriteMessage(System::Net::Sockets::Socket_ptr socket, const std::string& message);
-				std::string ReadMessage();
+				void WriteMessage(System::Net::Sockets::Socket_ptr socket, const IpcMessage_ptr message, const System::Timeout& timeout);
+				IpcMessage_ptr ReadMessage();
 
 				void DispatchExpiredMessages();
 				void DispatchExpiredRequests();
@@ -85,8 +86,8 @@ namespace System
 				std::mutex m_queueLock;
 				ManualResetEvent_ptr m_queueChangedEvent;
 
-				std::map<const IpcMessageId, std::shared_ptr<IpcRequest>> m_requestQueue; // TODO Rename to m_requests
-				std::mutex m_requestQueueLock; // TODO Rename m_requestsLock
+				std::map<const IpcMessageId, std::shared_ptr<IpcRequest>> m_requests;
+				std::mutex m_requestsLock;
 
 				ManualResetEvent_ptr m_writeDoneEvent;
 				ManualResetEvent_ptr m_connectedEvent;

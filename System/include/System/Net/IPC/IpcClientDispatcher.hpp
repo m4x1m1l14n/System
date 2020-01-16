@@ -1,7 +1,7 @@
 #ifndef __IPC_CLIENT_DISPATCHER_HPP__
 #define __IPC_CLIENT_DISPATCHER_HPP__
 
-#include <string>
+#include <System/Net/IPC/IpcMessage.hpp>
 
 namespace System
 {
@@ -15,7 +15,7 @@ namespace System
 				// TODO Define as pure virtuals
 				virtual void IpcClient_OnConnected() { }
 				virtual void IpcClient_OnError(const std::string&/* error*/) { }
-				virtual void IpcClient_OnMessage(const IpcMessageId/* id*/, const std::string&/* data*/) { }
+				virtual void IpcClient_OnMessage(const IpcMessage_ptr/* message*/) { }
 				virtual void IpcClient_OnDisconnected() { }
 			};
 		}

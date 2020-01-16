@@ -87,7 +87,7 @@ namespace Excalibur
 		{
 			concurrency::create_task([this]()
 				{
-					const auto request = m_ipcClient->CreateRequest("Hello world", System::Timeout::Infinite);
+					const auto request = m_ipcClient->CreateRequest("Hello world");
 
 					const auto response = m_ipcClient->SendRequest(request);
 

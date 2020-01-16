@@ -26,6 +26,7 @@ namespace System
 			const char IpcFrameStart = -86; // 0xAA in hex
 			const char IpcMessageStart = -86;
 			const std::uint64_t IpcServerRequestFlag = 0x8000000000000000;
+			const std::uint64_t IpcClientRequestFlag = 0x0000000000000000;
 			// IPC message header
 			//	1 byte 0xAA - frame start identificator
 			//	4 bytes		- length of message payload

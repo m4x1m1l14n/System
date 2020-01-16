@@ -48,17 +48,14 @@ namespace System
 
 				void Stop();
 
-				IpcRequest_ptr CreateRequest(const IpcClientId clientId, const std::string& data);
-				IpcRequest_ptr CreateRequest(const IpcClientId clientId, const std::string& data, const System::Timeout& timeout);
-
-				IpcResponse_ptr CreateResponse(const IpcClientId clientId, const IpcRequest_ptr request, const std::string& data);
-				IpcResponse_ptr CreateResponse(const IpcClientId clientId, const IpcRequest_ptr request, const std::string& data, const System::Timeout& timeout);
+				IpcRequest_ptr CreateRequest(const std::string& data);
+				IpcResponse_ptr CreateResponse(const IpcRequest_ptr request, const std::string& data);
 
 				std::string SendRequest(const IpcClientId clientId, const IpcRequest_ptr request);
 				void SendResponse(const IpcClientId clientId, const IpcResponse_ptr response);
 
 			protected:
-				inline IpcMessageId GenerateRequestId(const IpcClientId clientId);
+				inline IpcMessageId GenerateRequestId();
 
 				void AcceptThread(int port);
 				void WorkerThread();

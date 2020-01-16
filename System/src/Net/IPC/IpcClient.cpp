@@ -1,8 +1,5 @@
 #include <System/Net/IPC/IpcClient.hpp>
 
-// TODO Move to sources. No need to publish this class
-#include <System/Net/IPC/IpcFrame.hpp>
-
 #include "IpcCommon.hpp"
 
 #include <iostream>
@@ -65,21 +62,31 @@ namespace System
 				return m_clientId;
 			}
 
-			IpcRequest_ptr IpcClient::CreateRequest(const std::string& data, const Timeout& timeout)
+			IpcRequest_ptr IpcClient::CreateRequest(const std::string& data)
 			{
 				const auto id = this->GenerateRequestId(m_clientId);
 
-				const auto& request = std::make_shared<IpcRequest>(id, data, timeout);
+				const auto& request = std::make_shared<IpcRequest>(id, data);
 
 				return request;
 			}
 
-			IpcResponse_ptr IpcClient::CreateResponse(const IpcRequest_ptr request, const std::string& data, const Timeout& timeout)
+			IpcResponse_ptr IpcClient::CreateResponse(const IpcRequest_ptr request, const std::string& data)
 			{
-				return IpcResponse_ptr();
+				// TODO Check upper limit for chaining IDs & construct better message id!
+				const auto id = request->Id() + 1;
+
+				const auto& response = std::make_shared<IpcResponse>(id, data);
+
+				return response;
 			}
 
 			IpcResponse_ptr IpcClient::SendRequest(const IpcRequest_ptr request)
+			{
+				return this->SendRequest(request, Timeout::Infinite);
+			}
+
+			IpcResponse_ptr IpcClient::SendRequest(const IpcRequest_ptr request, const Timeout& timeout)
 			{
 				if (m_terminateEvent->IsSet())
 				{
@@ -105,6 +112,7 @@ namespace System
 				return this->SendResponse(messageId, data, Timeout::Infinite);
 			}
 
+			// TODO Implement timeout handling!
 			void IpcClient::SendResponse(const IpcMessageId messageId, const std::string& data, const Timeout & timeout)
 			{
 				if (m_terminateEvent->IsSet())
@@ -112,7 +120,7 @@ namespace System
 					throw std::runtime_error("IPC client stopped");
 				}
 
-				const auto& response = std::make_shared<IpcResponse>(messageId, data, timeout);
+				const auto& response = std::make_shared<IpcResponse>(messageId, data);
 
 				{
 					std::lock_guard<std::mutex> guard(m_queueLock);
@@ -135,6 +143,7 @@ namespace System
 
 			inline IpcMessageId IpcClient::GenerateRequestId(const IpcClientId clientId)
 			{
+				// TODO Reserve space for chaining messages
 				return static_cast<std::uint64_t>(clientId) << 31 | (s_messageIdIterator++ & 0x7fffffff);
 			}
 
@@ -168,22 +177,15 @@ namespace System
 
 						do
 						{
-							// TODO Rename to read freame
-							const auto& frame = this->ReadMessage();
+							const auto message = this->ReadMessage();
 
-							IpcMessageId id;
-							std::string payload;
-
-							details::ParseMessage(frame, id, payload);
-
-							// TODO Parse message ID from received message
 							std::shared_ptr<IpcRequest> request;
 
 							{
-								std::lock_guard<std::mutex> guard(m_requestQueueLock);
+								std::lock_guard<std::mutex> guard(m_requestsLock);
 
-								auto iter = m_requestQueue.find(id);
-								if (iter != m_requestQueue.end())
+								auto iter = m_requests.find(message->Id());
+								if (iter != m_requests.end())
 								{
 									request = iter->second;
 								}
@@ -191,11 +193,11 @@ namespace System
 
 							if (request)
 							{
-								request->SetResult(payload);
+								request->SetResult(message->Payload());
 							}
 							else
 							{
-								m_pDispatcher->IpcClient_OnMessage(id, payload);
+								m_pDispatcher->IpcClient_OnMessage(message);
 							}
 
 						} while (!m_terminateEvent->IsSet());
@@ -260,9 +262,10 @@ namespace System
 
 									try
 									{
-										const auto frame = IpcFrame(message);
+										// TODO Timeout from queue item
+										const auto timeout = Timeout::ElapseAfter(TimeSpan::FromSeconds(5));
 
-										this->WriteMessage(socket, frame.Data());
+										this->WriteMessage(socket, message, timeout);
 
 										// Message sent successfully
 										if (message->IsRequest())
@@ -270,9 +273,9 @@ namespace System
 											auto request = std::dynamic_pointer_cast<IpcRequest>(message);
 
 											{
-												std::lock_guard<std::mutex> guard(m_requestQueueLock);
+												std::lock_guard<std::mutex> guard(m_requestsLock);
 
-												m_requestQueue[request->Id()] = request;
+												m_requests[request->Id()] = request;
 											}
 										}
 										else
@@ -330,57 +333,30 @@ namespace System
 
 				// Register message always have message id 0
 				const auto id = IpcMessageId(0);
-				// TODO Registration timeout via define | via options class
+				
+				const auto message = std::make_shared<IpcRequest>(id, payload);
 				const auto timeout = Timeout::ElapseAfter(TimeSpan::FromSeconds(5));
 
-				const auto message = std::make_shared<IpcRequest>(id, payload, timeout);
-
-				const auto frame = std::make_shared<IpcFrame>(message);
-
-				const auto data = frame->Data();
-
-				this->WriteMessage(socket, data);
+				this->WriteMessage(socket, message, timeout);
 			}
 
-			void IpcClient::WriteMessage(Socket_ptr socket, const std::string & message)
+			void IpcClient::WriteMessage(Socket_ptr socket, const IpcMessage_ptr message, const System::Timeout& timeout)
 			{
-				const auto len = static_cast<std::uint32_t>(message.length());
+				const auto& frame = message->Frame();
 
-				std::string data;
-
-				data.reserve(IpcMessageHeaderSize + message.length());
-				
-				data = IpcMessageStart;
-				data.append(reinterpret_cast<const char*>(&len), sizeof(len));
-				data.append(message);
-
-				socket->Write(data, m_terminateEvent);
+				socket->Write(frame, timeout, m_terminateEvent);
 			}
 
 			// Read whole IPC message from socket
-			std::string IpcClient::ReadMessage()
+			IpcMessage_ptr IpcClient::ReadMessage()
 			{
 				do
 				{
-					if (m_buffer.length() >= IpcMessageHeaderSize)
+					if (!m_buffer.empty())
 					{
-						if (m_buffer[0] != 0xAA)
+						auto message = IpcMessage::PeekFromBuffer(m_buffer);
+						if (message)
 						{
-							// TODO throw
-						}
-
-						const auto payloadLength = static_cast<std::uint32_t>(
-							*reinterpret_cast<std::uint32_t*>(&m_buffer[1])
-						);
-
-						const auto messageLen = IpcMessageHeaderSize + payloadLength;
-
-						if (m_buffer.length() >= messageLen)
-						{
-							const auto& message = m_buffer.substr(IpcMessageHeaderSize, payloadLength);
-
-							m_buffer.erase(0, messageLen);
-
 							return message;
 						}
 					}
@@ -389,7 +365,7 @@ namespace System
 
 					m_buffer.append(data);
 
-				} while (1);
+				} while (true);
 			}
 
 			void IpcClient::DispatchExpiredMessages()
@@ -400,7 +376,8 @@ namespace System
 				{
 					const auto& message = *iter;
 
-					if (message->IsExpired())
+					// TODO Handle expired message
+					if (false /*message->IsExpired()*/)
 					{
 						message->SetResult(TimeoutException());
 
@@ -415,17 +392,18 @@ namespace System
 
 			void IpcClient::DispatchExpiredRequests()
 			{
-				std::lock_guard<std::mutex> guard(m_requestQueueLock);
+				std::lock_guard<std::mutex> guard(m_requestsLock);
 
-				for (auto iter = m_requestQueue.begin(); iter != m_requestQueue.end(); /* DO NOT INCREMENT */)
+				for (auto iter = m_requests.begin(); iter != m_requests.end(); /* DO NOT INCREMENT */)
 				{
 					const auto& request = iter->second;
 
-					if (request->IsExpired())
+					// TODO Handle expired requests
+					if (false /*request->IsExpired()*/)
 					{
 						request->SetResult(TimeoutException());
 
-						iter = m_requestQueue.erase(iter);
+						iter = m_requests.erase(iter);
 					}
 					else
 					{

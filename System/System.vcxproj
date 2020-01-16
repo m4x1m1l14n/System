@@ -183,7 +183,6 @@
     <ClCompile Include="src\Net\Http\HttpRequest.cpp" />
     <ClCompile Include="src\Net\Http\HttpResponse.cpp" />
     <ClCompile Include="src\Net\IPC\IpcClient.cpp" />
-    <ClCompile Include="src\Net\IPC\IpcFrame.cpp" />
     <ClCompile Include="src\Net\IPC\IpcServer.cpp" />
     <ClCompile Include="src\Net\Sockets\Socket.cpp" />
     <ClCompile Include="src\Net\Sockets\SocketException.cpp" />
@@ -230,7 +229,6 @@
     <ClInclude Include="include\System\Net\IPC\IpcClient.hpp" />
     <ClInclude Include="include\System\Net\IPC\IpcClientDispatcher.hpp" />
     <ClInclude Include="include\System\Net\IPC\IpcDefines.hpp" />
-    <ClInclude Include="include\System\Net\IPC\IpcFrame.hpp" />
     <ClInclude Include="include\System\Net\IPC\IpcMessage.hpp" />
     <ClInclude Include="include\System\Net\IPC\IpcOptions.hpp" />
     <ClInclude Include="include\System\Net\IPC\IpcRequest.hpp" />
@@ -267,6 +265,7 @@
     <ClInclude Include="include\Windows\ComPtr.h" />
     <ClInclude Include="include\Windows\Helpers.hpp" />
     <ClInclude Include="include\Windows\Mutex.hpp" />
+    <ClInclude Include="src\Net\IPC\IpcQueueItem.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Net\IPC\IpcCommon.hpp" />

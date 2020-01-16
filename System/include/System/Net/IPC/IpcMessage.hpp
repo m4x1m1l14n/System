@@ -15,6 +15,11 @@ namespace System
 	{
 		namespace IPC
 		{
+			// Forward declaration for typedef
+			class IpcMessage;
+
+			typedef std::shared_ptr<IpcMessage> IpcMessage_ptr;
+
 			class IpcMessage
 			{
 			public:
@@ -51,15 +56,11 @@ namespace System
 					}
 
 					const auto messageId = *reinterpret_cast<const IpcMessageId*>(&buffer[1 + sizeof(dataLen)]);
-
-					const auto& data = buffer.substr(0, messageLen);
+					const auto& payload = buffer.substr(0, messageLen);
 
 					buffer.erase(0, messageLen);
-				}
 
-				bool IsExpired() const
-				{
-					return m_timeout.GetIsElapsed();
+					return IpcMessage_ptr();
 				}
 
 				const std::string& Payload() const
@@ -72,22 +73,21 @@ namespace System
 					return m_id;
 				}
 
-				std::string Data()
+				std::string Frame()
 				{
-					if (m_data.empty())
+					if (m_frame.empty())
 					{
-						m_data.reserve(IpcMessageHeaderSize + m_payload.length());
+						m_frame.reserve(IpcMessageHeaderSize + m_payload.length());
 
 					}
 
-					return m_data;
+					return m_frame;
 				}
 
 			protected:
-				IpcMessage(const IpcMessageId id, const std::string& payload, const Timeout& timeout)
+				IpcMessage(const IpcMessageId id, const std::string& payload)
 					: m_id(id)
 					, m_payload(payload)
-					, m_timeout(timeout)
 				{
 
 				}
@@ -95,11 +95,8 @@ namespace System
 			protected:
 				IpcMessageId m_id;
 				std::string m_payload;
-				System::Timeout m_timeout;
-				std::string m_data;
+				std::string m_frame;
 			};
-
-			typedef std::shared_ptr<IpcMessage> IpcMessage_ptr;
 		}
 	}
 }

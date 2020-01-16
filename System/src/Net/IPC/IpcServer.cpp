@@ -126,27 +126,19 @@ namespace System
 				if (m_workerThread.joinable()) { m_workerThread.join(); }
 			}
 
-			IpcRequest_ptr IpcServer::CreateRequest(const IpcClientId clientId, const std::string& data)
+			IpcRequest_ptr IpcServer::CreateRequest(const std::string& data)
 			{
-				return this->CreateRequest(clientId, data, Timeout::Infinite);
+				const auto id = this->GenerateRequestId();
+
+				return std::make_shared<IpcRequest>(id, data);
 			}
 
-
-			IpcRequest_ptr IpcServer::CreateRequest(const IpcClientId clientId, const std::string& data, const System::Timeout& timeout)
+			IpcResponse_ptr IpcServer::CreateResponse(const IpcRequest_ptr request, const std::string& data)
 			{
-				const auto id = this->GenerateRequestId(clientId);
+				const auto id = request->Id() + 1;
+				const auto response = std::make_shared<IpcResponse>(id, data);
 
-				return std::make_shared<IpcRequest>(id, data, timeout);
-			}
-
-			IpcResponse_ptr IpcServer::CreateResponse(const IpcClientId clientId, const IpcRequest_ptr request, const std::string& data)
-			{
-				return this->CreateResponse(clientId, request, data, Timeout::Infinite);
-			}
-
-			IpcResponse_ptr IpcServer::CreateResponse(const IpcClientId clientId, const IpcRequest_ptr request, const std::string& data, const System::Timeout& timeout)
-			{
-				return IpcResponse_ptr();
+				return response;
 			}
 
 			std::string IpcServer::SendRequest(const IpcClientId clientId, const IpcRequest_ptr request)
@@ -201,17 +193,15 @@ namespace System
 				response->Wait();
 			}
 
-			/*
-				Generates unique server request id
-
-				Request id consists of IPC server request flag, which is MSB set to 1. Whole 32 bit client Id
-				and 31 bits of message unique iterator
-
-				TODO Calculate request id construction! Dont know if client id is necessary.
+			/**
+			*	Generates unique server request id
+			*
+			*	Request id consists of IPC server request flag, which is MSB set to 1. Whole 32 bit client Id
+			*	and 31 bits of message unique iterator
 			*/
-			inline IpcMessageId IpcServer::GenerateRequestId(const IpcClientId clientId)
+			inline IpcMessageId IpcServer::GenerateRequestId()
 			{
-				return IpcServerRequestFlag | static_cast<std::uint64_t>(clientId) << 31 | (s_messageIdIterator++ & 0x7fffffff);
+				return IpcServerRequestFlag | (s_messageIdIterator++ & 0x7fffffff);
 			}
 
 
@@ -377,9 +367,10 @@ namespace System
 
 											std::string payload;
 
-											auto completeMessage = details::PeekFrameFromBuffer(client->rxBuffer, payload);
-											if (completeMessage)
+											auto message = IpcMessage::PeekFromBuffer(client->rxBuffer);
+											if (message)
 											{
+												const auto& payload = message->Payload();
 												// Payload during registration contains client-id, which is 32bit number
 												if (payload.length() != 4)
 												{
@@ -588,24 +579,17 @@ namespace System
 
 											client->rxBuffer.append(data);
 
-											std::string message;
-
-											auto complete = details::PeekFrameFromBuffer(client->rxBuffer, message);
-											if (complete)
+											auto message = IpcMessage::PeekFromBuffer(client->rxBuffer);
+											if (message)
 											{
 												const auto& clientId = iter->first;
-
-												IpcMessageId messageId;
-												std::string payload;
-
-												details::ParseMessage(message, messageId, payload);
 
 												std::shared_ptr<IpcRequest> request;
 
 												{
 													std::lock_guard<std::mutex> guard(m_requestsLock);
 
-													auto iter = m_requests.find(messageId);
+													auto iter = m_requests.find(message->Id());
 													if (iter != m_requests.end())
 													{
 														request = iter->second;
@@ -614,11 +598,11 @@ namespace System
 
 												if (request)
 												{
-													request->SetResult(payload);
+													request->SetResult(message->Payload());
 												}
 												else
 												{
-													m_pDispatcher->IpcServer_OnMessage(clientId, messageId, data);
+													m_pDispatcher->IpcServer_OnMessage(clientId, message->Id(), data);
 												}
 											}
 										}
