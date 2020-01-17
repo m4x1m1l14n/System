@@ -24,35 +24,6 @@ namespace System
 					return serverSocket;
 				}
 
-				/**
-				* 
-				*/
-				static IpcMessageId ParseFrame(const std::string& frame, std::string& message)
-				{
-					// TODO implement
-					return 0;
-				}
-
-				static std::string CreateFrameFromMessage(const IpcMessage_ptr message)
-				{
-					const auto messageId = message->Id();
-					const auto& payload = message->Payload();
-					const auto payloadLen = static_cast<IpcMessageLength>(payload.length());
-
-					std::string frame;
-
-					const auto frameSize = IpcMessageHeaderSize + sizeof(messageId) + payloadLen;
-
-					frame.reserve(frameSize);
-
-					frame = IpcMessageStart;
-					frame.append(reinterpret_cast<const char*>(&payloadLen), sizeof(payloadLen));
-					frame.append(reinterpret_cast<const char*>(&messageId), sizeof(messageId));
-					frame.append(payload);
-
-					return frame;
-				}
-
 				inline timeval CreateTimeval(const System::TimeSpan& timeout)
 				{
 					const auto ms = timeout.GetTotalMilliseconds();
@@ -63,21 +34,6 @@ namespace System
 					tv.tv_usec = static_cast<long>(ms - (tv.tv_sec * 1000) * 1000);
 
 					return tv;
-				}
-
-				void WriteMessage(Socket_ptr socket, const std::string & message, ManualResetEvent_ptr terminateEvent)
-				{
-					const auto length = static_cast<std::uint32_t>(message.length());
-
-					std::string data;
-
-					data.reserve(IpcMessageHeaderSize + message.length());
-
-					data = IpcMessageStart;
-					data.append(reinterpret_cast<const char*>(&length), sizeof(length));
-					data.append(message);
-
-					socket->Write(data, terminateEvent);
 				}
 			}
 
