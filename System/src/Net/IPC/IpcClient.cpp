@@ -337,10 +337,7 @@ namespace System
 
 				payload.append(reinterpret_cast<const char*>(&m_clientId), sizeof(m_clientId));
 
-				// Register message always have message id 0
-				const auto id = IpcMessageId(0);
-				
-				const auto message = std::make_shared<IpcMessage>(id, payload);
+				const auto message = std::make_shared<IpcMessage>(IpcRegisterMessageId, payload);
 				const auto timeout = Timeout::ElapseAfter(TimeSpan::FromSeconds(5));
 
 				this->WriteMessage(socket, message, timeout);

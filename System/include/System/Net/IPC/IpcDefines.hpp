@@ -25,6 +25,8 @@ namespace System
 
 			typedef std::uint32_t IpcFrameLength;
 
+			const IpcMessageId IpcRegisterMessageId = 0;
+
 			const char IpcFrameStart = -86; // 0xAA in hex
 			const char IpcMessageStart = -86;
 			const std::uint64_t IpcServerRequestFlag = 0x8000000000000000;

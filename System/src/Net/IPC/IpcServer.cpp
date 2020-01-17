@@ -366,7 +366,7 @@ namespace System
 												const auto messageId = message->Id();
 												const auto& payload = message->Payload();
 												// Payload during registration contains client-id
-												if (messageId != 0 || payload.length() != sizeof(IpcClientId))
+												if (messageId != IpcRegisterMessageId || payload.length() != sizeof(IpcClientId))
 												{
 													throw std::runtime_error("Wrong registration payload!");
 												}
