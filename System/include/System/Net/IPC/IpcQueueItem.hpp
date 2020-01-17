@@ -37,6 +37,11 @@ namespace System
 						return m_message;
 					}
 
+					System::Timeout Timeout() const
+					{
+						return m_timeout;
+					}
+
 					bool IsExpired() const
 					{
 						return m_timeout.GetIsElapsed();

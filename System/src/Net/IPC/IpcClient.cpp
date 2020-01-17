@@ -266,10 +266,8 @@ namespace System
 
 									try
 									{
-										// TODO Timeout from queue item
-										const auto timeout = Timeout::ElapseAfter(TimeSpan::FromSeconds(5));
-
 										const auto message = queueItem->Message();
+										const auto timeout = queueItem->Timeout();
 
 										this->WriteMessage(socket, message, timeout);
 
