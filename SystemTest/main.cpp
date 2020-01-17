@@ -30,6 +30,7 @@ void InitializeSockets()
 #endif // _WIN32
 }
 
+using namespace System;
 namespace ipc = System::Net::IPC;
 
 namespace Excalibur
@@ -67,6 +68,18 @@ namespace Excalibur
 			std::cout << "Client connected: " << clientId << std::endl;
 		}
 
+		virtual void IpcServer_OnMessage(const ipc::IpcClientId clientId, const ipc::IpcMessage_ptr message) override
+		{
+			std::cout << "Client: " << clientId << ", Message: " << message->Payload() << std::endl;
+
+			/*auto ignore = concurrency::create_task([this, clientId, message]()
+				{
+					const auto response = m_ipcServer->CreateResponse(message, "Hello");
+
+					m_ipcServer->SendResponse(clientId, response);
+				});*/
+		}
+
 	private:
 		ipc::IpcServer_ptr m_ipcServer;
 	};
@@ -89,9 +102,16 @@ namespace Excalibur
 				{
 					const auto request = m_ipcClient->CreateRequest("Hello world");
 
-					const auto response = m_ipcClient->SendRequest(request);
+					auto timeout = Timeout::ElapseAfter(TimeSpan::FromSeconds(5));
 
-					int a = 5;
+					try
+					{
+						const auto response = m_ipcClient->SendRequest(request, timeout);
+					}
+					catch (const std::exception & ex)
+					{
+						std::cout << ex.what() << std::endl;
+					}
 				});
 		}
 

@@ -1,9 +1,11 @@
 #ifndef __SYSTEM_NET_IPC_DEFINES_HPP__
 #define __SYSTEM_NET_IPC_DEFINES_HPP__
 
+
 #include <cstdint>
 #include <map>
 #include <deque>
+
 
 namespace System
 {
@@ -33,6 +35,11 @@ namespace System
 			//	8 bytes		- message id
 			const auto IpcMessageHeaderSize = sizeof(IpcMessageStart) + sizeof(IpcMessageLength) + sizeof(IpcMessageId);
 			const auto IpcFrameHeaderSize = sizeof(IpcFrameStart) + sizeof(IpcFrameLength);
+
+			namespace details
+			{
+				//typedef std::map<const IpcMessageId, IpcRequest_ptr> RequestsQueue;
+			}
 		}
 	}
 }

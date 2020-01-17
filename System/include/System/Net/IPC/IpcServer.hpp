@@ -1,17 +1,19 @@
 #ifndef __IPC_SERVER_HPP__
 #define __IPC_SERVER_HPP__
 
+
 #include <System/Net/Sockets/Socket.hpp>
-#include <System/Net/IPC/IpcRequest.hpp>
-#include <System/Net/IPC/IpcResponse.hpp>
 #include <System/Net/IPC/IpcServerDispatcher.hpp>
+#include <System/Net/IPC/IpcQueueItem.hpp>
 
 #include <map>
 #include <iostream>
 #include <cassert>
 
+
 // TODO using to source file!
 using namespace System::Net::Sockets;
+
 
 namespace System
 {
@@ -27,7 +29,7 @@ namespace System
 					Timeout timeout;
 					std::string rxBuffer;
 					std::string txBuffer;
-					std::deque<IpcMessage_ptr> txQueue;
+					std::deque<IpcQueueItem_ptr> txQueue;
 					bool connected;
 				};
 
@@ -48,11 +50,14 @@ namespace System
 
 				void Stop();
 
-				IpcRequest_ptr CreateRequest(const std::string& data);
-				IpcResponse_ptr CreateResponse(const IpcRequest_ptr request, const std::string& data);
+				IpcMessage_ptr CreateRequest(const std::string& data);
+				IpcMessage_ptr CreateResponse(const IpcMessage_ptr request, const std::string& data);
 
-				std::string SendRequest(const IpcClientId clientId, const IpcRequest_ptr request);
-				void SendResponse(const IpcClientId clientId, const IpcResponse_ptr response);
+				IpcMessage_ptr SendRequest(const IpcClientId clientId, const IpcMessage_ptr request);
+				IpcMessage_ptr SendRequest(const IpcClientId clientId, const IpcMessage_ptr request, const System::Timeout& timeout);
+
+				void SendResponse(const IpcClientId clientId, const IpcMessage_ptr response);
+				void SendResponse(const IpcClientId clientId, const IpcMessage_ptr response, const System::Timeout& timeout);
 
 			protected:
 				inline IpcMessageId GenerateRequestId();
@@ -69,7 +74,7 @@ namespace System
 				std::mutex m_clientsLock;
 				std::atomic<bool> m_clientsChanged;
 
-				std::map<const IpcMessageId, std::shared_ptr<IpcRequest>> m_requests;
+				std::map<const IpcMessageId, details::IpcQueueRequestItem_ptr> m_requests;
 				std::mutex m_requestsLock;
 
 				std::thread m_acceptThread;

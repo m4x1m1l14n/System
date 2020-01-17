@@ -3,9 +3,8 @@
 
 #include <System/Net/IPC/IpcDefines.hpp>
 #include <System/Net/IPC/IpcClientDispatcher.hpp>
-
-#include <System/Net/IPC/IpcRequest.hpp>
-#include <System/Net/IPC/IpcResponse.hpp>
+#include <System/Net/IPC/IpcMessage.hpp>
+#include <System/Net/IPC/IpcQueueItem.hpp>
 
 #include <System/Net/Sockets/Socket.hpp>
 
@@ -38,14 +37,14 @@ namespace System
 				// Getters
 				IpcClientId ClientId() const;
 
-				IpcRequest_ptr CreateRequest(const std::string& data);
-				IpcResponse_ptr CreateResponse(const IpcRequest_ptr request, const std::string& data);
+				IpcMessage_ptr CreateRequest(const std::string& data);
+				IpcMessage_ptr CreateResponse(const IpcMessage_ptr request, const std::string& data);
 
-				IpcResponse_ptr SendRequest(const IpcRequest_ptr request);
-				IpcResponse_ptr SendRequest(const IpcRequest_ptr request, const Timeout& timeout);
+				IpcMessage_ptr SendRequest(const IpcMessage_ptr request);
+				IpcMessage_ptr SendRequest(const IpcMessage_ptr request, const Timeout& timeout);
 
-				void SendResponse(const IpcMessageId messageId, const std::string& data);
-				void SendResponse(const IpcMessageId messageId, const std::string& data, const Timeout& timeout);
+				void SendResponse(const IpcMessage_ptr response);
+				void SendResponse(const IpcMessage_ptr response, const Timeout& timeout);
 
 			private:
 				IpcClientId CreateClientId();
@@ -63,7 +62,7 @@ namespace System
 				void DispatchExpiredRequests();
 				void CancelPendingMessages();
 
-				std::shared_ptr<IpcMessage> PopQueueMessage(size_t& prevQueueSize);
+				details::IpcQueueItem_ptr PopQueueItem(size_t& prevQueueSize);
 
 				System::Net::Sockets::Socket_ptr GetSocket();
 				void SetSocket(System::Net::Sockets::Socket_ptr socket);
@@ -82,11 +81,11 @@ namespace System
 				System::Net::Sockets::Socket_ptr m_socket;
 				std::mutex m_socketLock;
 
-				std::deque<std::shared_ptr<IpcMessage>> m_queue;
+				std::deque<details::IpcQueueItem_ptr> m_queue;
 				std::mutex m_queueLock;
 				ManualResetEvent_ptr m_queueChangedEvent;
 
-				std::map<const IpcMessageId, std::shared_ptr<IpcRequest>> m_requests;
+				std::map<const IpcMessageId, details::IpcQueueRequestItem_ptr> m_requests;
 				std::mutex m_requestsLock;
 
 				ManualResetEvent_ptr m_writeDoneEvent;

@@ -15,6 +15,13 @@ namespace System
 	{
 		namespace IPC
 		{
+			class IpcClientImpl
+				: public IpcClient
+			{
+
+			};
+
+
 			std::atomic<std::uint32_t> IpcClient::s_instanceCounter = 1;
 			std::atomic<std::uint32_t> IpcClient::s_messageIdIterator = 1;
 
@@ -35,7 +42,7 @@ namespace System
 			{
 				if (m_port == 0)
 				{
-					throw std::invalid_argument("port number must be spceified");
+					throw std::invalid_argument("port number must be spcecified");
 				}
 
 				if (pDispatcher == nullptr)
@@ -47,7 +54,7 @@ namespace System
 			}
 
 			/**
-				\brief Class dtor
+				Class dtor
 
 				Stops IPC client in case client is not stopped explicitly
 				by calling Stop member
@@ -62,75 +69,72 @@ namespace System
 				return m_clientId;
 			}
 
-			IpcRequest_ptr IpcClient::CreateRequest(const std::string& data)
+			IpcMessage_ptr IpcClient::CreateRequest(const std::string& data)
 			{
 				const auto id = this->GenerateRequestId(m_clientId);
 
-				const auto& request = std::make_shared<IpcRequest>(id, data);
+				const auto& request = std::make_shared<IpcMessage>(id, data);
 
 				return request;
 			}
 
-			IpcResponse_ptr IpcClient::CreateResponse(const IpcRequest_ptr request, const std::string& data)
+			IpcMessage_ptr IpcClient::CreateResponse(const IpcMessage_ptr request, const std::string& data)
 			{
-				// TODO Check upper limit for chaining IDs & construct better message id!
-				const auto id = request->Id() + 1;
+				const auto id = request->Id();
 
-				const auto& response = std::make_shared<IpcResponse>(id, data);
+				const auto& response = std::make_shared<IpcMessage>(id, data);
 
 				return response;
 			}
 
-			IpcResponse_ptr IpcClient::SendRequest(const IpcRequest_ptr request)
+			IpcMessage_ptr IpcClient::SendRequest(const IpcMessage_ptr request)
 			{
 				return this->SendRequest(request, Timeout::Infinite);
 			}
 
-			IpcResponse_ptr IpcClient::SendRequest(const IpcRequest_ptr request, const Timeout& timeout)
+			IpcMessage_ptr IpcClient::SendRequest(const IpcMessage_ptr request, const Timeout& timeout)
 			{
 				if (m_terminateEvent->IsSet())
 				{
 					throw std::runtime_error("IPC client stopped");
 				}
 
+				auto requestQueueItem = std::make_shared<details::IpcQueueRequestItem>(request, timeout);
+
 				{
 					std::lock_guard<std::mutex> guard(m_queueLock);
 
-					m_queue.push_back(request);
+					m_queue.push_back(requestQueueItem);
 
 					m_queueChangedEvent->Set();
 				}
 
-				const auto& result = request->Wait();
-
-				// TODO Construct response pointer!
-				return IpcResponse_ptr();
+				return requestQueueItem->Wait();
 			}
 
-			void IpcClient::SendResponse(const IpcMessageId messageId, const std::string& data)
+			void IpcClient::SendResponse(const IpcMessage_ptr response)
 			{
-				return this->SendResponse(messageId, data, Timeout::Infinite);
+				return this->SendResponse(response, Timeout::Infinite);
 			}
 
-			// TODO Implement timeout handling!
-			void IpcClient::SendResponse(const IpcMessageId messageId, const std::string& data, const Timeout & timeout)
+			void IpcClient::SendResponse(const IpcMessage_ptr response, const Timeout & timeout)
 			{
 				if (m_terminateEvent->IsSet())
 				{
 					throw std::runtime_error("IPC client stopped");
 				}
 
-				const auto& response = std::make_shared<IpcResponse>(messageId, data);
+				const auto& responseQueueItem = std::make_shared<details::IpcQueueResponseItem>(response, timeout);
 
 				{
 					std::lock_guard<std::mutex> guard(m_queueLock);
 
-					m_queue.push_back(response);
+					m_queue.push_back(responseQueueItem);
 
 					m_queueChangedEvent->Set();
 				}
 
-				response->Wait();
+				responseQueueItem->Wait();
 			}
 
 			IpcClientId IpcClient::CreateClientId()
@@ -179,7 +183,7 @@ namespace System
 						{
 							const auto message = this->ReadMessage();
 
-							std::shared_ptr<IpcRequest> request;
+							details::IpcQueueRequestItem_ptr requestQueueItem;
 
 							{
 								std::lock_guard<std::mutex> guard(m_requestsLock);
@@ -187,13 +191,13 @@ namespace System
 								auto iter = m_requests.find(message->Id());
 								if (iter != m_requests.end())
 								{
-									request = iter->second;
+									requestQueueItem = iter->second;
 								}
 							}
 
-							if (request)
+							if (requestQueueItem)
 							{
-								request->SetResult(message->Payload());
+								requestQueueItem->SetResult(message);
 							}
 							else
 							{
@@ -250,8 +254,8 @@ namespace System
 						{
 							size_t prevQueueSize = 0;
 							
-							auto message = this->PopQueueMessage(prevQueueSize);
-							if (message)
+							auto queueItem = this->PopQueueItem(prevQueueSize);
+							if (queueItem)
 							{
 								auto success = false;
 
@@ -265,22 +269,26 @@ namespace System
 										// TODO Timeout from queue item
 										const auto timeout = Timeout::ElapseAfter(TimeSpan::FromSeconds(5));
 
+										const auto message = queueItem->Message();
+
 										this->WriteMessage(socket, message, timeout);
 
 										// Message sent successfully
-										if (message->IsRequest())
+										if (queueItem->IsRequestItem())
 										{
-											auto request = std::dynamic_pointer_cast<IpcRequest>(message);
+											auto requestQueueItem = std::dynamic_pointer_cast<details::IpcQueueRequestItem>(queueItem);
 
 											{
 												std::lock_guard<std::mutex> guard(m_requestsLock);
 
-												m_requests[request->Id()] = request;
+												m_requests[message->Id()] = requestQueueItem;
 											}
 										}
 										else
 										{
-											dynamic_cast<IpcResponse*>(message.get())->SetResult();
+											auto responseQueueItem = dynamic_cast<details::IpcQueueResponseItem*>(queueItem.get());
+
+											responseQueueItem->SetResult();
 										}
 
 										success = true;
@@ -300,7 +308,7 @@ namespace System
 									// queue position as before, to be processed in next iteration
 									if (!success)
 									{
-										m_queue.insert(m_queue.begin() + (m_queue.size() - prevQueueSize), message);
+										m_queue.insert(m_queue.begin() + (m_queue.size() - prevQueueSize), queueItem);
 									}
 									// Otherwise, if queue is already empty and all messages was sent successfully
 									// we can reset changed event
@@ -334,7 +342,7 @@ namespace System
 				// Register message always have message id 0
 				const auto id = IpcMessageId(0);
 				
-				const auto message = std::make_shared<IpcRequest>(id, payload);
+				const auto message = std::make_shared<IpcMessage>(id, payload);
 				const auto timeout = Timeout::ElapseAfter(TimeSpan::FromSeconds(5));
 
 				this->WriteMessage(socket, message, timeout);
@@ -374,12 +382,11 @@ namespace System
 
 				for (auto iter = m_queue.begin(); iter != m_queue.end(); /* DO NOT INCREMENT */)
 				{
-					const auto& message = *iter;
+					const auto& queueItem = *iter;
 
-					// TODO Handle expired message
-					if (false /*message->IsExpired()*/)
+					if (queueItem->IsExpired())
 					{
-						message->SetResult(TimeoutException());
+						queueItem->SetResult(TimeoutException());
 
 						iter = m_queue.erase(iter);
 					}
@@ -396,12 +403,11 @@ namespace System
 
 				for (auto iter = m_requests.begin(); iter != m_requests.end(); /* DO NOT INCREMENT */)
 				{
-					const auto& request = iter->second;
+					const auto& requestQueueItem = iter->second;
 
-					// TODO Handle expired requests
-					if (false /*request->IsExpired()*/)
+					if (requestQueueItem->IsExpired())
 					{
-						request->SetResult(TimeoutException());
+						requestQueueItem->SetResult(TimeoutException());
 
 						iter = m_requests.erase(iter);
 					}
@@ -424,16 +430,16 @@ namespace System
 				m_queue.clear();
 			}
 
-			std::shared_ptr<IpcMessage> IpcClient::PopQueueMessage(size_t& prevQueueSize)
+			details::IpcQueueItem_ptr IpcClient::PopQueueItem(size_t& prevQueueSize)
 			{
-				std::shared_ptr<IpcMessage> message;
+				details::IpcQueueItem_ptr queueItem;
 
 				{
 					std::lock_guard<std::mutex> guard(m_queueLock);
 
 					if (!m_queue.empty())
 					{
-						message = m_queue.front();
+						queueItem = m_queue.front();
 
 						m_queue.pop_front();
 
@@ -445,7 +451,7 @@ namespace System
 					}
 				}
 
-				return message;
+				return queueItem;
 			}
 
 			Socket_ptr IpcClient::GetSocket()

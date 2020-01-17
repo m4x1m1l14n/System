@@ -23,15 +23,25 @@ namespace System
 			class IpcMessage
 			{
 			public:
+				IpcMessage(const std::string& frame)
+					: m_frame(frame)
+				{
+
+				}
+
+				IpcMessage(const IpcMessageId id, const std::string& payload)
+					: m_id(id)
+					, m_payload(payload)
+				{
+
+				}
+
 				virtual ~IpcMessage()
 				{
 
 				}
 
-				virtual void SetResult(const std::exception& ex) = 0;
-				virtual bool IsRequest() const = 0;
-				virtual bool IsResponse() const = 0;
-
+				// TODO When parsing message from buffer, store frame 
 				static IpcMessage_ptr PeekFromBuffer(std::string& buffer)
 				{
 					// Check if buffer starts with frame start indicator
@@ -47,20 +57,22 @@ namespace System
 						return IpcMessage_ptr();
 					}
 
-					const auto dataLen = *reinterpret_cast<const IpcMessageLength*>(&buffer[1]);
-					const auto messageLen = IpcMessageHeaderSize + dataLen;
+					const auto payloadLen = *reinterpret_cast<const IpcMessageLength*>(&buffer[1]);
+					const auto messageLen = IpcMessageHeaderSize + payloadLen;
 					if (buffer.size() < messageLen)
 					{
 						// We do not have enough data to parse whole frame
 						return IpcMessage_ptr();
 					}
 
-					const auto messageId = *reinterpret_cast<const IpcMessageId*>(&buffer[1 + sizeof(dataLen)]);
-					const auto& payload = buffer.substr(0, messageLen);
+					const auto id = *reinterpret_cast<const IpcMessageId*>(&buffer[1 + sizeof(payloadLen)]);
+					const auto& payload = buffer.substr(1 + sizeof(payloadLen) + sizeof(id), payloadLen);
 
 					buffer.erase(0, messageLen);
 
-					return IpcMessage_ptr();
+					auto message = std::make_shared<IpcMessage>(id, payload);
+
+					return message;
 				}
 
 				const std::string& Payload() const
@@ -77,19 +89,23 @@ namespace System
 				{
 					if (m_frame.empty())
 					{
-						m_frame.reserve(IpcMessageHeaderSize + m_payload.length());
+						const auto payloadLen = static_cast<IpcMessageLength>(m_payload.length());
 
+						std::string frame;
+
+						const auto frameSize = IpcMessageHeaderSize + payloadLen;
+
+						frame.reserve(frameSize);
+
+						frame = IpcMessageStart;
+						frame.append(reinterpret_cast<const char*>(&payloadLen), sizeof(payloadLen));
+						frame.append(reinterpret_cast<const char*>(&m_id), sizeof(m_id));
+						frame.append(m_payload);
+
+						m_frame = std::move(frame);
 					}
 
 					return m_frame;
-				}
-
-			protected:
-				IpcMessage(const IpcMessageId id, const std::string& payload)
-					: m_id(id)
-					, m_payload(payload)
-				{
-
 				}
 
 			protected:

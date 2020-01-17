@@ -231,8 +231,6 @@
     <ClInclude Include="include\System\Net\IPC\IpcDefines.hpp" />
     <ClInclude Include="include\System\Net\IPC\IpcMessage.hpp" />
     <ClInclude Include="include\System\Net\IPC\IpcOptions.hpp" />
-    <ClInclude Include="include\System\Net\IPC\IpcRequest.hpp" />
-    <ClInclude Include="include\System\Net\IPC\IpcResponse.hpp" />
     <ClInclude Include="include\System\Net\IPC\IpcServer.hpp" />
     <ClInclude Include="include\System\Net\IPC\IpcServerDispatcher.hpp" />
     <ClInclude Include="include\System\Net\Sockets\AddressFamily.hpp" />
@@ -265,7 +263,7 @@
     <ClInclude Include="include\Windows\ComPtr.h" />
     <ClInclude Include="include\Windows\Helpers.hpp" />
     <ClInclude Include="include\Windows\Mutex.hpp" />
-    <ClInclude Include="src\Net\IPC\IpcQueueItem.hpp" />
+    <ClInclude Include="include\System\Net\IPC\IpcQueueItem.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Net\IPC\IpcCommon.hpp" />

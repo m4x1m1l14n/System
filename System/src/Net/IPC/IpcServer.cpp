@@ -1,7 +1,5 @@
 #include <System/Net/IPC/IpcServer.hpp>
 
-#include <System/Net/IPC/IpcResponse.hpp>
-
 #include "IpcCommon.hpp"
 
 #include <memory>
@@ -83,6 +81,13 @@ namespace System
 				}
 			}
 
+
+			class IpcServerImpl
+				: public IpcServer
+			{
+			};
+
+
 			std::atomic<std::uint32_t> IpcServer::s_messageIdIterator = 1;
 
 			IpcServer::IpcServer(int port, IpcServerDispatcher * pDispatcher)
@@ -126,28 +131,39 @@ namespace System
 				if (m_workerThread.joinable()) { m_workerThread.join(); }
 			}
 
-			IpcRequest_ptr IpcServer::CreateRequest(const std::string& data)
+			IpcMessage_ptr IpcServer::CreateRequest(const std::string& data)
 			{
 				const auto id = this->GenerateRequestId();
 
-				return std::make_shared<IpcRequest>(id, data);
+				return std::make_shared<IpcMessage>(id, data);
 			}
 
-			IpcResponse_ptr IpcServer::CreateResponse(const IpcRequest_ptr request, const std::string& data)
+
+
+			IpcMessage_ptr IpcServer::CreateResponse(const IpcMessage_ptr request, const std::string& data)
 			{
-				const auto id = request->Id() + 1;
-				const auto response = std::make_shared<IpcResponse>(id, data);
+				const auto id = request->Id();
+				const auto response = std::make_shared<IpcMessage>(id, data);
 
 				return response;
 			}
 
-			std::string IpcServer::SendRequest(const IpcClientId clientId, const IpcRequest_ptr request)
+
+
+			IpcMessage_ptr IpcServer::SendRequest(const IpcClientId clientId, const IpcMessage_ptr request)
+			{
+				return this->SendRequest(clientId, request, Timeout::Infinite);
+			}
+
+			IpcMessage_ptr IpcServer::SendRequest(const IpcClientId clientId, const IpcMessage_ptr request, const System::Timeout& timeout)
 			{
 				if (m_terminateEvent->IsSet())
 				{
 					throw std::runtime_error("IPC client is stopped");
 				}
 
+				details::IpcQueueRequestItem_ptr requestQueueItem;
+
 				{
 					std::lock_guard<std::mutex> guard(m_clientsLock);
 
@@ -160,20 +176,34 @@ namespace System
 					{
 						const auto& client = iter->second;
 
-						client->txQueue.push_back(request);
+						requestQueueItem = std::make_shared<details::IpcQueueRequestItem>(request, timeout);
+
+						client->txQueue.push_back(requestQueueItem);
 					}
 				}
 
-				return request->Wait();
+				// At this point, request queue item cannot be unset
+				assert(requestQueueItem);
+
+				return requestQueueItem->Wait();
 			}
 
-			void IpcServer::SendResponse(const IpcClientId clientId, const IpcResponse_ptr response)
+
+
+			void IpcServer::SendResponse(const IpcClientId clientId, const IpcMessage_ptr response)
+			{
+				return this->SendResponse(clientId, response, Timeout::Infinite);
+			}
+
+			void IpcServer::SendResponse(const IpcClientId clientId, const IpcMessage_ptr response, const System::Timeout& timeout)
 			{
 				if (m_terminateEvent->IsSet())
 				{
 					throw std::runtime_error("IPC client stopped");
 				}
 
+				details::IpcQueueResponseItem_ptr responseQueueItem;
+
 				{
 					std::lock_guard<std::mutex> guard(m_clientsLock);
 
@@ -186,12 +216,19 @@ namespace System
 					{
 						const auto& client = iter->second;
 
-						client->txQueue.push_back(response);
+						responseQueueItem = std::make_shared<details::IpcQueueResponseItem>(response, timeout);
+
+						client->txQueue.push_back(responseQueueItem);
 					}
 				}
 
-				response->Wait();
+				// At this point response queue item cannot be empty
+				assert(responseQueueItem);
+
+				responseQueueItem->Wait();
 			}
+
+
 
 			/**
 			*	Generates unique server request id
@@ -370,9 +407,10 @@ namespace System
 											auto message = IpcMessage::PeekFromBuffer(client->rxBuffer);
 											if (message)
 											{
+												const auto messageId = message->Id();
 												const auto& payload = message->Payload();
-												// Payload during registration contains client-id, which is 32bit number
-												if (payload.length() != 4)
+												// Payload during registration contains client-id
+												if (messageId != 0 || payload.length() != sizeof(IpcClientId))
 												{
 													throw std::runtime_error("Wrong registration payload!");
 												}
@@ -584,7 +622,7 @@ namespace System
 											{
 												const auto& clientId = iter->first;
 
-												std::shared_ptr<IpcRequest> request;
+												details::IpcQueueRequestItem_ptr requestQueueItem;
 
 												{
 													std::lock_guard<std::mutex> guard(m_requestsLock);
@@ -592,17 +630,17 @@ namespace System
 													auto iter = m_requests.find(message->Id());
 													if (iter != m_requests.end())
 													{
-														request = iter->second;
+														requestQueueItem = iter->second;
 													}
 												}
 
-												if (request)
+												if (requestQueueItem)
 												{
-													request->SetResult(message->Payload());
+													requestQueueItem->SetResult(message);
 												}
 												else
 												{
-													m_pDispatcher->IpcServer_OnMessage(clientId, message->Id(), data);
+													m_pDispatcher->IpcServer_OnMessage(clientId, message);
 												}
 											}
 										}
@@ -649,9 +687,10 @@ namespace System
 											//	Some messages must be present in tx queue
 											assert(!client->txQueue.empty());
 
-											const auto& message = client->txQueue.front();
+											const auto& queueItem = client->txQueue.front();
+											const auto& message = queueItem->Message();
 
-											client->txBuffer = details::CreateFrameFromMessage(message);
+											client->txBuffer = message->Frame();
 										}
 
 										// tx buffer here cannot be empty
@@ -659,24 +698,25 @@ namespace System
 
 										try
 										{
-											// TODO Implement int Write(const std::string&) on socket class and use it here!
-											// TODO Implement void WriteAll(const std::string&) to send all data
-											client->socket->Write(client->txBuffer);
+											const auto written = client->socket->Write(client->txBuffer);
 
-											auto written = client->txBuffer.length();
-											client->txBuffer.clear();
+											// Strip written bytes from tx buffer
+											client->txBuffer.erase(0, written);
+
+											// If whole message was sent, post-process message
 											if (client->txBuffer.empty())
 											{
-												const auto& message = client->txQueue.front();
+												const auto& queueItem = client->txQueue.front();
 
-												if (message->IsRequest())
+												if (queueItem->IsRequestItem())
 												{
-													auto request = std::dynamic_pointer_cast<IpcRequest>(message);
+													const auto requestQueueItem = std::dynamic_pointer_cast<details::IpcQueueRequestItem>(queueItem);
+													const auto& request = requestQueueItem->Message();
 
 													{
 														std::lock_guard<std::mutex> guard(m_requestsLock);
 
-														m_requests[message->Id()] = request;
+														m_requests[request->Id()] = requestQueueItem;
 													}
 												}
 
