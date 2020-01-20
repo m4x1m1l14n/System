@@ -14,9 +14,12 @@ namespace System
 			public:
 				// TODO Define as pure virtuals
 				virtual void IpcClient_OnConnected() { }
-				virtual void IpcClient_OnError(const std::string&/* error*/) { }
+				virtual void IpcClient_OnError(const std::exception&/* ex*/) { }
 				virtual void IpcClient_OnMessage(const IpcMessage_ptr/* message*/) { }
 				virtual void IpcClient_OnDisconnected() { }
+
+				virtual void IpcClient_EncryptPayload(std::string&/* payload*/) { }
+				virtual void IpcClient_DecryptPayload(std::string&/* payload*/) { }
 			};
 		}
 	}

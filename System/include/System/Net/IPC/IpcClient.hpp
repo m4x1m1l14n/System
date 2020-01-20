@@ -26,6 +26,7 @@ namespace System
 			class IpcClient
 			{
 			public:
+				IpcClient(int port);
 				IpcClient(int port, IpcClientDispatcher *pDispatcher);
 				IpcClient(const std::string& host, int port, IpcClientDispatcher *pDispatcher);
 
@@ -66,6 +67,13 @@ namespace System
 
 				System::Net::Sockets::Socket_ptr GetSocket();
 				void SetSocket(System::Net::Sockets::Socket_ptr socket);
+
+				void Invoke_OnConnected();
+				void Invoke_OnDisconnected();
+				void Invoke_OnMessage(const IpcMessage_ptr message);
+				void Invoke_OnError(const std::exception& ex);
+				void Invoke_EncyptPayload(std::string& payload);
+				void Invoke_DecryptPayload(std::string& payload);
 
 			private:
 				IpcClientId m_clientId;

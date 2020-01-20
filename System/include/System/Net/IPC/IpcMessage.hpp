@@ -26,7 +26,7 @@ namespace System
 				IpcMessage(const std::string& frame)
 					: m_frame(frame)
 				{
-
+					// TODO lazy payload parsing!
 				}
 
 				IpcMessage(const IpcMessageId id, const std::string& payload)
@@ -75,7 +75,7 @@ namespace System
 					return message;
 				}
 
-				const std::string& Payload() const
+				std::string& Payload()
 				{
 					return m_payload;
 				}

@@ -25,6 +25,7 @@ namespace System
 
 				virtual void IpcServer_EncryptPayload(std::string&/* payload*/) { }
 				virtual void IpcServer_DecryptPayload(std::string&/* payload*/) { }
+
 				virtual void IpcServer_OnError(const std::exception&/* ex*/) { }
 			};
 		}

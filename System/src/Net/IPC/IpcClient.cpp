@@ -15,15 +15,30 @@ namespace System
 	{
 		namespace IPC
 		{
+			class IpcClientDefaultDispatcher
+				: public IpcClientDispatcher
+			{
+
+			};
+
 			class IpcClientImpl
 				: public IpcClient
 			{
 
 			};
 
-
+			
+			// Statics
 			std::atomic<std::uint32_t> IpcClient::s_instanceCounter = 1;
 			std::atomic<std::uint32_t> IpcClient::s_messageIdIterator = 1;
+			IpcClientDefaultDispatcher s_defaultDispatcher;
+
+
+			IpcClient::IpcClient(int port)
+				: IpcClient(std::string(), port, nullptr)
+			{
+
+			}
 
 			IpcClient::IpcClient(int port, IpcClientDispatcher * pDispatcher)
 				: IpcClient(std::string(), port, pDispatcher)
@@ -38,8 +53,11 @@ namespace System
 				, m_connectedEvent(std::make_shared<ManualResetEvent>())
 				, m_host(host.empty() ? "localhost" : host)
 				, m_port(port)
-				, m_pDispatcher(pDispatcher)
 			{
+				m_pDispatcher = (pDispatcher != nullptr)
+					? pDispatcher
+					: &s_defaultDispatcher;
+
 				if (m_port == 0)
 				{
 					throw std::invalid_argument("port number must be spcecified");
@@ -174,7 +192,7 @@ namespace System
 						m_connectedEvent->Set();
 
 						// Signal to dispatcher object, that client was successfully connected
-						m_pDispatcher->IpcClient_OnConnected();
+						this->Invoke_OnConnected();
 
 						// After successfull connect reset reconnect timeout to zero
 						waitTime = 0;
@@ -192,6 +210,8 @@ namespace System
 								if (iter != m_requests.end())
 								{
 									requestQueueItem = iter->second;
+
+									m_requests.erase(iter);
 								}
 							}
 
@@ -201,7 +221,7 @@ namespace System
 							}
 							else
 							{
-								m_pDispatcher->IpcClient_OnMessage(message);
+								this->Invoke_OnMessage(message);
 							}
 
 						} while (!m_terminateEvent->IsSet());
@@ -212,7 +232,7 @@ namespace System
 					}
 					catch (const std::exception& ex)
 					{
-						m_pDispatcher->IpcClient_OnError(ex.what());
+						this->Invoke_OnError(ex);
 					}
 
 					// Signal to transmitter event, that writing
@@ -220,7 +240,7 @@ namespace System
 					m_connectedEvent->Reset();
 
 					// Signal to dispatcher object, that IPC client was disconnected
-					m_pDispatcher->IpcClient_OnDisconnected();
+					this->Invoke_OnDisconnected();
 
 					// Add 50 seconds to reconnect
 					if (waitTime < 1000)
@@ -337,6 +357,8 @@ namespace System
 
 				payload.append(reinterpret_cast<const char*>(&m_clientId), sizeof(m_clientId));
 
+				this->Invoke_EncyptPayload(payload);
+
 				const auto message = std::make_shared<IpcMessage>(IpcRegisterMessageId, payload);
 				const auto timeout = Timeout::ElapseAfter(TimeSpan::FromSeconds(5));
 
@@ -360,6 +382,10 @@ namespace System
 						auto message = IpcMessage::PeekFromBuffer(m_buffer);
 						if (message)
 						{
+							auto& payload = message->Payload();
+
+							this->Invoke_DecryptPayload(payload);
+
 							return message;
 						}
 					}
@@ -461,6 +487,78 @@ namespace System
 				std::lock_guard<std::mutex> guard(m_socketLock);
 
 				m_socket = socket;
+			}
+
+			void IpcClient::Invoke_OnConnected()
+			{
+				try
+				{
+					m_pDispatcher->IpcClient_OnConnected();
+				}
+				catch (const std::exception & ex)
+				{
+					this->Invoke_OnError(ex);
+				}
+			}
+
+			void IpcClient::Invoke_OnDisconnected()
+			{
+				try
+				{
+					m_pDispatcher->IpcClient_OnDisconnected();
+				}
+				catch (const std::exception & ex)
+				{
+					this->Invoke_OnError(ex);
+				}
+			}
+
+			void IpcClient::Invoke_OnMessage(const IpcMessage_ptr message)
+			{
+				try
+				{
+					m_pDispatcher->IpcClient_OnMessage(message);
+				}
+				catch (const std::exception & ex)
+				{
+					this->Invoke_OnError(ex);
+				}
+			}
+
+			void IpcClient::Invoke_OnError(const std::exception& ex)
+			{
+				try
+				{
+					m_pDispatcher->IpcClient_OnError(ex);
+				}
+				catch (const std::exception &)
+				{
+					// TODO Log???
+				}
+			}
+
+			void IpcClient::Invoke_EncyptPayload(std::string& payload)
+			{
+				try
+				{
+					m_pDispatcher->IpcClient_EncryptPayload(payload);
+				}
+				catch (const std::exception & ex)
+				{
+					this->Invoke_OnError(ex);
+				}
+			}
+
+			void IpcClient::Invoke_DecryptPayload(std::string& payload)
+			{
+				try
+				{
+					m_pDispatcher->IpcClient_DecryptPayload(payload);
+				}
+				catch (const std::exception & ex)
+				{
+					this->Invoke_OnError(ex);
+				}
 			}
 
 			/**

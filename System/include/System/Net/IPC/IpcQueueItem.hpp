@@ -67,7 +67,7 @@ namespace System
 					virtual void SetResult(const std::exception& ex)
 					{
 						const auto pex = std::make_exception_ptr(ex);
-						m_message->Id();
+
 						m_promise.set_exception(pex);
 					}
 
