@@ -199,7 +199,9 @@ namespace System
 
 						do
 						{
-							const auto message = this->ReadMessage();
+							auto message = this->ReadMessage();
+
+							this->Invoke_DecryptPayload(message->Payload());
 
 							details::IpcQueueRequestItem_ptr requestQueueItem;
 
