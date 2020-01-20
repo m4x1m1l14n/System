@@ -97,7 +97,7 @@ namespace System
 
 				void Start(TimeSpan interval, size_t dueTime = DefaultDueTime, TimerFlags flags = TimerFlags::ExecuteDefault)
 				{
-					Start(static_cast<size_t>(interval.TotalMilliseconds), dueTime, flags);
+					Start(static_cast<size_t>(interval.GetTotalMilliseconds()), dueTime, flags);
 				}
 				
 				void Start(size_t interval, size_t dueTime = DefaultDueTime, TimerFlags flags = TimerFlags::ExecuteDefault)

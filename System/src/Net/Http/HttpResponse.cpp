@@ -137,6 +137,7 @@ namespace System
 			}
 
 			HttpStatusLine::HttpStatusLine()
+				: m_statusCode(HttpStatusCode::Uninitialized)
 			{
 
 			}
