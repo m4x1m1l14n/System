@@ -7,13 +7,14 @@
 #include <LM.h>
 #include <DSRole.h>
 
-// #include <Registry.hpp>
+#include <Registry.hpp>
 
 #include <System/Environment.hpp>
 #include <System/IO/Path.hpp>
 #include <System/Text/Encoding.hpp>
 
-// #include <ComPtr.h>
+#include <atlbase.h>
+#include <comutil.h>
 
 #include <algorithm>
 #include <locale>
@@ -21,8 +22,10 @@
 
 #include <WbemProv.h>
 
+using namespace m4x1m1l14n;
 using namespace System;
 using namespace System::IO;
+using namespace System::Text;
 
 std::wstring Environment::GetFolderPath(SpecialFolder folder)
 {
@@ -105,14 +108,15 @@ std::wstring System::Environment::GetComputerName()
 	return computerName;
 }
 
-/*
 std::string System::Environment::GetMachineGUID()
 {
 	try
 	{
 		auto key = Registry::LocalMachine->Open(L"SOFTWARE\\Microsoft\\Cryptography");
 
-		return System::Text::Encoding::ToUTF8(key->GetString(L"MachineGuid"));
+		const auto& machineGuid = Encoding::ToUTF8(key->GetString(L"MachineGuid"));
+
+		return machineGuid;
 	}
 	catch (const std::exception&)
 	{
@@ -121,40 +125,39 @@ std::string System::Environment::GetMachineGUID()
 		);
 	}
 }
-*/
 
-/*
 std::string System::Environment::GetOperatingSystemVersion()
 {
 	std::string osVersion;
 
 	ULONG uReturn = 0;
 
-	ComPtr<IWbemLocator> pWbemLocator;
+	CComPtr<IWbemLocator> pWbemLocator;
 
 	HRESULT hr = CoCreateInstance(CLSID_WbemAdministrativeLocator, nullptr, CLSCTX_INPROC_SERVER, IID_IWbemLocator, reinterpret_cast<void**>(&pWbemLocator));
 
 	if (SUCCEEDED(hr))
 	{
-		ComPtr<IWbemServices> pWbemServices;
+		CComPtr<IWbemServices> pWbemServices;
 
-		hr = pWbemLocator->ConnectServer(L"root\\cimv2", nullptr, nullptr, nullptr, WBEM_FLAG_CONNECT_USE_MAX_WAIT, nullptr, nullptr, &pWbemServices);
+		hr = pWbemLocator->ConnectServer(_bstr_t(L"root\\cimv2"), nullptr, nullptr, nullptr, WBEM_FLAG_CONNECT_USE_MAX_WAIT, nullptr, nullptr, &pWbemServices);
 
 		if (hr == WBEM_S_NO_ERROR)
 		{
-			ComPtr<IEnumWbemClassObject> pEnumerator;
+			CComPtr<IEnumWbemClassObject> pEnumerator;
 
-			hr = pWbemServices->ExecQuery(L"WQL", L"SELECT Caption, Version FROM Win32_OperatingSystem", WBEM_FLAG_FORWARD_ONLY, nullptr, &pEnumerator);
+			hr = pWbemServices->ExecQuery(_bstr_t(L"WQL"), _bstr_t(L"SELECT Caption, Version FROM Win32_OperatingSystem"), WBEM_FLAG_FORWARD_ONLY, nullptr, &pEnumerator);
 
 			if (hr == WBEM_S_NO_ERROR)
 			{
-				ComPtr<IWbemClassObject> pClassObject;
+				CComPtr<IWbemClassObject> pClassObject;
 
 				if ((hr = pEnumerator->Next(WBEM_INFINITE, 1L, &pClassObject, &uReturn)) == S_OK)
 				{
 					if (uReturn != 0)
 					{
 						VARIANT variant;
+
 						hr = pClassObject->Get(L"Caption", 0L, &variant, nullptr, nullptr);
 
 						if (SUCCEEDED(hr))
@@ -166,6 +169,7 @@ std::string System::Environment::GetOperatingSystemVersion()
 
 							VariantClear(&variant);
 						}
+
 						hr = pClassObject->Get(L"Version", 0L, &variant, nullptr, nullptr);
 
 						if (SUCCEEDED(hr))
@@ -185,7 +189,6 @@ std::string System::Environment::GetOperatingSystemVersion()
 
 	return osVersion;
 }
-*/
 
 std::wstring System::Environment::GetHostDomainName()
 {

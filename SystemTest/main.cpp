@@ -35,29 +35,13 @@ namespace ipc = System::Net::IPC;
 
 namespace Excalibur
 {
-	class ExcaliburIpcClient
-		: public ipc::IpcClientDispatcher
-	{
-	public:
-
-	};
-
-	class ExcaliburIpcServer
-		: public ipc::IpcServerDispatcher
-	{
-	public:
-
-	};
-
-
-
 	const int port = 65321;
 
-	class ExcaliburClient
+	class IpcServerTest
 		: public ipc::IpcServerDispatcher
 	{
 	public:
-		ExcaliburClient()
+		IpcServerTest()
 		{
 			m_ipcServer = std::make_shared<ipc::IpcServer>(port, this);
 			m_ipcServer->Start();
@@ -72,12 +56,12 @@ namespace Excalibur
 		{
 			std::cout << "Client: " << clientId << ", Message: " << message->Payload() << std::endl;
 
-			/*auto ignore = concurrency::create_task([this, clientId, message]()
+			auto ignore = concurrency::create_task([this, clientId, message]()
 				{
 					const auto response = m_ipcServer->CreateResponse(message, "Hello");
 
 					m_ipcServer->SendResponse(clientId, response);
-				});*/
+				});
 		}
 
 	private:
@@ -86,11 +70,11 @@ namespace Excalibur
 
 
 
-	class ExcaliburCredentialProviderUI
+	class IpcClientTest
 		: public ipc::IpcClientDispatcher
 	{
 	public:
-		ExcaliburCredentialProviderUI()
+		IpcClientTest()
 		{
 			m_ipcClient = std::make_shared<ipc::IpcClient>(port, this);
 			m_ipcClient->Start();
@@ -107,12 +91,19 @@ namespace Excalibur
 					try
 					{
 						const auto response = m_ipcClient->SendRequest(request, timeout);
+
+						std::cout << response->Payload() << std::endl;
 					}
 					catch (const std::exception & ex)
 					{
 						std::cout << ex.what() << std::endl;
 					}
 				});
+		}
+
+		virtual void IpcClient_OnError(const std::exception& ex) override
+		{
+			std::cout << "Client error: " << ex.what() << std::endl;
 		}
 
 	private:
@@ -126,8 +117,8 @@ int main()
 {
 	InitializeSockets();
 
-	auto excaliburClient = ExcaliburClient();
-	auto excaliburCredProviderUI = ExcaliburCredentialProviderUI();
+	auto ipcServerTest = IpcServerTest();
+	auto ipcClientTest = IpcClientTest();
 
 	do
 	{

@@ -364,7 +364,17 @@ namespace System
 											if (message)
 											{
 												const auto messageId = message->Id();
-												const auto& payload = message->Payload();
+												auto payload = message->Payload();
+
+												try
+												{
+													m_pDispatcher->IpcServer_DecryptPayload(payload);
+												}
+												catch (const std::exception & ex)
+												{
+													// TODO What now?
+												}
+
 												// Payload during registration contains client-id
 												if (messageId != IpcRegisterMessageId || payload.length() != sizeof(IpcClientId))
 												{

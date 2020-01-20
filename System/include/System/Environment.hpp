@@ -33,8 +33,8 @@ namespace System
 	public:
 		static std::wstring GetFolderPath(SpecialFolder folder);
 		static std::wstring GetComputerName();
-		// static std::string GetMachineGUID();
-		// static std::string GetOperatingSystemVersion();
+		static std::string GetMachineGUID();
+		static std::string GetOperatingSystemVersion();
 		static std::wstring GetHostDomainName();
 		static std::string GetHostDomainNameA();
 		static MachineRole GetMachineRole();

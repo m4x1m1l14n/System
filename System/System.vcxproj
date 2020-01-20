@@ -95,7 +95,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)include\;$(ProjectDir)..\3rd\m4x1m1l14n\openssl.git\openssl-1.1.0f-vs2015-MT\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Crypto.git\Crypto\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include\;$(ProjectDir)..\3rd\m4x1m1l14n\openssl.git\openssl-1.1.0f-vs2015-MT\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Registry.git\Registry\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Crypto.git\Crypto\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
@@ -110,7 +110,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)include\;$(ProjectDir)..\3rd\m4x1m1l14n\openssl.git\openssl-1.1.0f-vs2015-MT\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Crypto.git\Crypto\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include\;$(ProjectDir)..\3rd\m4x1m1l14n\openssl.git\openssl-1.1.0f-vs2015-MT\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Registry.git\Registry\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Crypto.git\Crypto\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
@@ -127,7 +127,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)include\;$(ProjectDir)..\3rd\m4x1m1l14n\openssl.git\openssl-1.1.0f-vs2015-MT\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Crypto.git\Crypto\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include\;$(ProjectDir)..\3rd\m4x1m1l14n\openssl.git\openssl-1.1.0f-vs2015-MT\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Registry.git\Registry\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Crypto.git\Crypto\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
@@ -149,7 +149,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)include\;$(ProjectDir)..\3rd\m4x1m1l14n\openssl.git\openssl-1.1.0f-vs2015-MT\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Crypto.git\Crypto\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include\;$(ProjectDir)..\3rd\m4x1m1l14n\openssl.git\openssl-1.1.0f-vs2015-MT\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Registry.git\Registry\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Crypto.git\Crypto\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
@@ -260,7 +260,6 @@
     <ClInclude Include="include\System\Timers\Timer.hpp" />
     <ClInclude Include="include\System\TimeSpan.hpp" />
     <ClInclude Include="include\System\Version.hpp" />
-    <ClInclude Include="include\Windows\ComPtr.h" />
     <ClInclude Include="include\Windows\Helpers.hpp" />
     <ClInclude Include="include\Windows\Mutex.hpp" />
     <ClInclude Include="include\System\Net\IPC\IpcQueueItem.hpp" />
