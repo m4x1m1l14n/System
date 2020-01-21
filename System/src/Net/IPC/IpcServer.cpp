@@ -295,7 +295,7 @@ namespace System
 								}
 
 								// Handle client socket errors
-								for (auto iter = pendingClients.begin(); iter != pendingClients.end(), count > 0; /* DO NOT INCREMENT */)
+								for (auto iter = pendingClients.begin(); iter != pendingClients.end() && count > 0; /* DO NOT INCREMENT */)
 								{
 									// If error on pending client, remove!
 									if (FD_ISSET(iter->first, &errorfds))
@@ -341,7 +341,7 @@ namespace System
 								}
 
 								// Handle data from client sockets
-								for (auto iter = pendingClients.begin(); iter != pendingClients.end(), count > 0; /* DO NOT INCREMENT */)
+								for (auto iter = pendingClients.begin(); iter != pendingClients.end() && count > 0; /* DO NOT INCREMENT */)
 								{
 									auto eraseClient = false;
 
@@ -537,7 +537,7 @@ namespace System
 								auto count = errorfds.fd_count;
 
 								// Handle client socket errors
-								for (auto iter = m_clients.begin(); iter != m_clients.end(), count > 0; /* DO NOT INCREMENT */)
+								for (auto iter = m_clients.begin(); iter != m_clients.end() && count > 0; /* DO NOT INCREMENT */)
 								{
 									// If error on pending client, remove!
 									const auto& client = iter->second;
@@ -570,7 +570,7 @@ namespace System
 							{
 								auto count = readfds.fd_count;
 
-								for (auto iter = m_clients.begin(); iter != m_clients.end(), count > 0; /* DO NOT INCREMENT */)
+								for (auto iter = m_clients.begin(); iter != m_clients.end() && count > 0; /* DO NOT INCREMENT */)
 								{
 									auto erased = false;
 									const auto& client = iter->second;
@@ -640,7 +640,7 @@ namespace System
 							{
 								auto count = writefds.fd_count;
 
-								for (auto iter = m_clients.begin(); iter != m_clients.end(), count > 0; /* DO NOT INCREMENT */)
+								for (auto iter = m_clients.begin(); iter != m_clients.end() && count > 0; /* DO NOT INCREMENT */)
 								{
 									const auto& client = iter->second;
 
