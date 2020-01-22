@@ -1,6 +1,7 @@
 #pragma comment(lib, "Shell32.lib")
 #pragma comment(lib, "Wbemuuid.lib")
 #pragma comment(lib, "Netapi32.lib")
+#pragma comment(lib, "comsuppw.lib")
 
 #include <Windows.h>
 #include <ShlObj.h>

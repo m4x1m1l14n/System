@@ -12,6 +12,7 @@ namespace System
 			Url();
 			Url(const std::string& url);
 			Url(const std::string& scheme, const std::string& host);
+			Url(int port);
 			Url(const std::string& host, int port);
 			Url(const std::string& scheme, const std::string& host, int port);
 			Url(const std::string& scheme, const std::string& host, const std::string& path);

@@ -68,6 +68,12 @@ namespace System
 		{
 		}
 
+		Url::Url(int port)
+			: Url(std::string(), port)
+		{
+
+		}
+
 		Url::Url(const std::string & host, int port)
 			: Url(std::string(), host, port)
 		{
