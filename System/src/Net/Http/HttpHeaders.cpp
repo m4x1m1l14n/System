@@ -1,5 +1,7 @@
 #include <System/Net/Http/HttpHeaders.hpp>
 
+#include <System/String.hpp>
+
 #include <sstream>
 
 namespace System
@@ -52,9 +54,9 @@ namespace System
 				return *this;
 			}
 
-			HttpHeaders & HttpHeaders::Add(const std::string & key, const std::string & value)
+			HttpHeaders & HttpHeaders::Add(std::string key, std::string value)
 			{
-				this->m_fields[key] = value;
+				this->m_fields[String::Trim(key)] = String::Trim(value);
 
 				// Enable chaining
 				return *this;
@@ -84,8 +86,6 @@ namespace System
 				{
 					ss << field.first << ": " << field.second << "\r\n";
 				}
-
-				ss << "\r\n";
 
 				return ss.str();
 			}

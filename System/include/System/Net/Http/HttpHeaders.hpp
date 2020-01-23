@@ -27,7 +27,7 @@ namespace System
 				//	Comment out destructor to enable default copy ctor & assignment operator
 				// virtual ~HttpHeaders();
 
-				HttpHeaders& Add(const std::string& key, const std::string& value);
+				HttpHeaders& Add(std::string key, std::string value);
 				bool Contains(const std::string& key);
 
 				std::string operator[](const std::string& key) const;

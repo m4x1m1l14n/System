@@ -14,7 +14,9 @@ namespace System
 			class HttpRequest
 			{
 			public:
-				HttpRequest(const HttpMethod& method, const std::string& url, const System::Version& version = System::Version(1, 1));
+				HttpRequest(const HttpMethod& method);
+				HttpRequest(const HttpMethod& method, const std::string& url);
+				HttpRequest(const HttpMethod& method, const std::string& url, const System::Version& version);
 
 				HttpMethod Method();
 				std::string RequestUrl();
