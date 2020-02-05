@@ -87,6 +87,11 @@ namespace System
 				if (m_workerThread.joinable()) { m_workerThread.join(); }
 			}
 
+			int IpcServer::Port() const
+			{
+				return m_port;
+			}
+
 			IpcMessage_ptr IpcServer::CreateRequest(const std::string& data)
 			{
 				const auto id = this->GenerateRequestId();
@@ -111,6 +116,18 @@ namespace System
 				return this->SendRequest(clientId, request, Timeout::Infinite);
 			}
 
+			/** Sends request to specified client
+			 * 
+			 * @param[in] clientId ID of client to whom the request is addressed
+			 * @param[in] request The request object
+			 * @param[in] timeout Timeout object to specify amount of time, which server will wait for response
+			 * @return IPC client response
+			 *
+			 * @note This method does not send request directly. Only enqueue request and waits for response
+			 * @throw std::runtime_error When IPC server was not started yet
+			 * @throw std::invalid_argument When IPC client with provided client ID was not connected yet
+			 * @throw System::TimeoutException In case client does not respond to request within specified timeout
+			 */
 			IpcMessage_ptr IpcServer::SendRequest(const IpcClientId clientId, const IpcMessage_ptr request, const System::Timeout& timeout)
 			{
 				if (m_terminateEvent->IsSet())

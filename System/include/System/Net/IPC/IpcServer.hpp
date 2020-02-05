@@ -50,6 +50,8 @@ namespace System
 
 				void Stop();
 
+				int Port() const;
+
 				IpcMessage_ptr CreateRequest(const std::string& data);
 				IpcMessage_ptr CreateResponse(const IpcMessage_ptr request, const std::string& data);
 

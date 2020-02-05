@@ -27,6 +27,7 @@ namespace System
 
 			const std::uint64_t IpcServerRequestFlag = 0x8000000000000000;
 			const std::uint64_t IpcClientRequestFlag = 0x0000000000000000;
+			constexpr IpcClientId IpcInvalidClientId = 0;
 			
 			// IPC message header
 			//	1 byte 0xAA - frame start identificator

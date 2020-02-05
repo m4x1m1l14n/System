@@ -4,6 +4,9 @@
 
 namespace System
 {
+	/**
+	 * @todo Implement Value member to return initial value
+	 */
 	class Timeout
 	{
 	public:
