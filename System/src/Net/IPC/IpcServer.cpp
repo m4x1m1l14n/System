@@ -31,7 +31,7 @@ namespace System
 					timeval tv;
 
 					tv.tv_sec = static_cast<long>(ms / 1000);
-					tv.tv_usec = static_cast<long>(ms - (tv.tv_sec * 1000) * 1000);
+					tv.tv_usec = static_cast<long>(ms - (static_cast<double>(tv.tv_sec) * 1000) * 1000);
 
 					return tv;
 				}
