@@ -8,26 +8,77 @@
 
 namespace System
 {
+	/**
+	* Gets currently running executables filename with absolute path.
+	*
+	* @note std::filesystem::current_path() is not working correctly. Application running as windows service resolves current path to System32 directory!
+	*/
 	std::filesystem::path Application::GetFileName()
 	{
-		return std::filesystem::current_path();
+#if defined(_WIN32)
 
-#if defined(_WIN32) && 0
-		wchar_t szFileName[MAX_PATH];
+		static std::filesystem::path fileName;
 
-		if (::GetModuleFileNameW(HINST_THISCOMPONENT, szFileName, MAX_PATH))
+		if (fileName.empty())
 		{
-			return std::wstring(szFileName);
+			size_t bufferLen = MAX_PATH;
+			auto buffer = std::make_unique<wchar_t[]>(bufferLen);
+
+			do
+			{
+				const auto result = ::GetModuleFileNameW(HINST_THISCOMPONENT, buffer.get(), static_cast<DWORD>(bufferLen));
+				if (result == 0)
+				{
+					const auto lastError = ::GetLastError();
+
+					throw std::system_error(
+						std::error_code(lastError, std::system_category()),
+						"GetModuleFileNameW() returned 0"
+					);
+				}
+				else if (result == bufferLen)
+				{
+					const auto lastError = ::GetLastError();
+
+					if (lastError == ERROR_INSUFFICIENT_BUFFER)
+					{
+						bufferLen *= 2;
+						buffer = std::make_unique<wchar_t[]>(bufferLen);
+					}
+					else
+					{
+						throw std::system_error(
+							std::error_code(lastError, std::system_category()),
+							"GetModuleFileNameW() returned " + std::to_string(result)
+						);
+					}
+				}
+				else
+				{
+					fileName = std::filesystem::path(buffer.get());
+				}
+
+			} while (fileName.empty());
 		}
 
-		return std::wstring();
-#endif // _WIN32
+		return fileName;
+
+#else
+		static_assert(false, "Implement");
+#endif
 	}
 
 	std::filesystem::path Application::GetFilePath()
 	{
-		return Application::GetFileName()
-			.remove_filename();
+		static std::filesystem::path applicationFilePath;
+
+		if (applicationFilePath.empty())
+		{
+			applicationFilePath = Application::GetFileName()
+				.remove_filename();
+		}
+
+		return applicationFilePath;
 		
 #if defined(_WIN32) && 0
 		const auto& fileName = Application::GetFileName();
