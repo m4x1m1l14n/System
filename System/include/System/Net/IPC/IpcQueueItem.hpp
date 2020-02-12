@@ -4,7 +4,7 @@
 
 #include <System/Net/IPC/IpcMessage.hpp>
 
-
+// TODO Move implementation to source file
 namespace System
 {
 	namespace Net
@@ -25,7 +25,7 @@ namespace System
 
 					virtual bool IsRequestItem() const = 0;
 
-					virtual void SetResult(const std::exception& ex) = 0;
+					virtual void SetResult(const std::exception_ptr pex) = 0;
 
 					bool IsResponseItem() const
 					{
@@ -64,10 +64,8 @@ namespace System
 
 					}
 
-					virtual void SetResult(const std::exception& ex)
+					virtual void SetResult(const std::exception_ptr pex) override
 					{
-						const auto pex = std::make_exception_ptr(ex);
-
 						m_promise.set_exception(pex);
 					}
 
@@ -104,10 +102,8 @@ namespace System
 
 					}
 
-					virtual void SetResult(const std::exception& ex)
+					virtual void SetResult(const std::exception_ptr pex) override
 					{
-						const auto pex = std::make_exception_ptr(ex);
-
 						m_promise.set_exception(pex);
 					}
 

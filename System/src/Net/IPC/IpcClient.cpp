@@ -409,7 +409,9 @@ namespace System
 
 					if (queueItem->IsExpired())
 					{
-						queueItem->SetResult(TimeoutException());
+						const auto pex = std::make_exception_ptr(TimeoutException());
+
+						queueItem->SetResult(pex);
 
 						iter = m_queue.erase(iter);
 					}
@@ -430,7 +432,9 @@ namespace System
 
 					if (requestQueueItem->IsExpired())
 					{
-						requestQueueItem->SetResult(TimeoutException());
+						const auto pex = std::make_exception_ptr(TimeoutException());
+
+						requestQueueItem->SetResult(pex);
 
 						iter = m_requests.erase(iter);
 					}
@@ -447,7 +451,9 @@ namespace System
 
 				for (auto& item : m_queue)
 				{
-					item->SetResult(OperationCanceledException());
+					const auto pex = std::make_exception_ptr(OperationCanceledException());
+
+					item->SetResult(pex);
 				}
 
 				m_queue.clear();
