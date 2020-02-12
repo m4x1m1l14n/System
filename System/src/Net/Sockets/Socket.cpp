@@ -316,7 +316,7 @@ namespace System
 
 					assert(tx != 0);
 
-					tx_total -= tx;
+					tx_total += tx;
 
 				} while (tx_total < len);
 			}
