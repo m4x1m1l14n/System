@@ -630,7 +630,7 @@ namespace System
 										catch (const std::exception& ex)
 										{
 											// TODO Separate method to remove client
-											const auto& clientId = iter->first;
+											const auto clientId = iter->first;
 
 											// Remove client from clients map!
 											iter = m_clients.erase(iter);
