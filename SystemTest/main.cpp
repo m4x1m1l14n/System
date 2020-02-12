@@ -33,92 +33,91 @@ void InitializeSockets()
 using namespace System;
 namespace ipc = System::Net::IPC;
 
-namespace Excalibur
+const int port = 65321;
+
+class IpcServerTest
+	: public ipc::IpcServerDispatcher
 {
-	const int port = 65321;
-
-	class IpcServerTest
-		: public ipc::IpcServerDispatcher
+public:
+	IpcServerTest()
 	{
-	public:
-		IpcServerTest()
-		{
-			m_ipcServer = std::make_shared<ipc::IpcServer>(port, this);
-			m_ipcServer->Start();
-		}
+		m_ipcServer = std::make_shared<ipc::IpcServer>(port, this);
+		m_ipcServer->Start();
+	}
 
-		virtual void IpcServer_ClientConnected(const ipc::IpcClientId clientId) override
-		{
-			std::cout << "Client connected: " << clientId << std::endl;
-		}
-
-		virtual void IpcServer_OnMessage(const ipc::IpcClientId clientId, const ipc::IpcMessage_ptr message) override
-		{
-			std::cout << "Client: " << clientId << ", Message: " << message->Payload() << std::endl;
-
-			auto ignore = concurrency::create_task([this, clientId, message]()
-				{
-					const auto response = m_ipcServer->CreateResponse(message, "Hello");
-
-					m_ipcServer->SendResponse(clientId, response);
-				});
-		}
-
-	private:
-		ipc::IpcServer_ptr m_ipcServer;
-	};
-
-
-
-	class IpcClientTest
-		: public ipc::IpcClientDispatcher
+	virtual void IpcServer_ClientConnected(const ipc::IpcClientId clientId) override
 	{
-	public:
-		IpcClientTest()
+		std::cout << "Client connected: " << clientId << std::endl;
+	}
+
+	virtual void IpcServer_OnMessage(const ipc::IpcClientId clientId, const ipc::IpcMessage_ptr message) override
+	{
+		std::cout << "Client  " << clientId << " said " << message->Payload() << std::endl;
+
+		auto ignore = concurrency::create_task([this, clientId, message]()
 		{
-			m_ipcClient = std::make_shared<ipc::IpcClient>(port, this);
-			m_ipcClient->Start();
-		}
+			const auto response = m_ipcServer->CreateResponse(message, message->Payload());
 
-		virtual void IpcClient_OnConnected() override
+			m_ipcServer->SendResponse(clientId, response);
+		});
+	}
+
+private:
+	ipc::IpcServer_ptr m_ipcServer;
+};
+
+
+
+class IpcClientTest
+	: public ipc::IpcClientDispatcher
+{
+public:
+	IpcClientTest()
+	{
+		m_ipcClient = std::make_shared<ipc::IpcClient>(port, this);
+		m_ipcClient->Start();
+	}
+
+	virtual void IpcClient_OnConnected() override
+	{
+		concurrency::create_task([this]()
 		{
-			concurrency::create_task([this]()
-				{
-					const auto request = m_ipcClient->CreateRequest("Hello world");
+			const auto request = m_ipcClient->CreateRequest("Hello world");
 
-					auto timeout = Timeout::ElapseAfter(TimeSpan::FromSeconds(5));
+			auto timeout = Timeout::ElapseAfter(TimeSpan::FromSeconds(5));
 
-					try
-					{
-						const auto response = m_ipcClient->SendRequest(request, timeout);
+			try
+			{
+				const auto response = m_ipcClient->SendRequest(request, timeout);
 
-						std::cout << response->Payload() << std::endl;
-					}
-					catch (const std::exception & ex)
-					{
-						std::cout << ex.what() << std::endl;
-					}
-				});
-		}
+				std::cout << "Server responded: " << response->Payload() << std::endl;
+			}
+			catch (const std::exception & ex)
+			{
+				std::cout << ex.what() << std::endl;
+			}
+		});
+	}
 
-		virtual void IpcClient_OnError(const std::exception& ex) override
-		{
-			std::cout << "Client error: " << ex.what() << std::endl;
-		}
+	virtual void IpcClient_OnError(const std::exception& ex) override
+	{
+		std::cout << "Client error: " << ex.what() << std::endl;
+	}
 
-	private:
-		ipc::IpcClient_ptr m_ipcClient;
-	};
-}
+private:
+	ipc::IpcClient_ptr m_ipcClient;
+};
 
-using namespace Excalibur;
 
 int main()
 {
 	InitializeSockets();
 
 	auto ipcServerTest = IpcServerTest();
-	auto ipcClientTest = IpcClientTest();
+	auto ipcClientTest1 = IpcClientTest();
+	auto ipcClientTest2 = IpcClientTest();
+	auto ipcClientTest3 = IpcClientTest();
+	auto ipcClientTest4 = IpcClientTest();
 
 	do
 	{

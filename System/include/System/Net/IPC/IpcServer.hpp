@@ -26,6 +26,7 @@ namespace System
 				struct Client
 				{
 					Socket_ptr socket;
+					IpcClientId clientId;
 					Timeout timeout;
 					std::string rxBuffer;
 					std::string txBuffer;
@@ -67,6 +68,16 @@ namespace System
 				void AcceptThread(int port);
 				void WorkerThread();
 
+				void ProcessResponse(const IpcMessage_ptr response);
+
+				void Invoke_Opened();
+				void Invoke_ClientConnected(const IpcClientId clientId);
+				void Invoke_ClientDisconnected(const IpcClientId clientId);
+				void Invoke_OnMessage(const IpcClientId clientId, const IpcMessage_ptr message);
+				void Invoke_EncryptPayload(std::string& payload);
+				void Invoke_DecryptPayload(std::string& payload);
+				void Invoke_OnError(const std::exception& ex);
+
 			protected:
 				int m_port;
 				ManualResetEvent_ptr m_terminateEvent;
@@ -74,7 +85,6 @@ namespace System
 
 				std::map<const IpcClientId, details::Client_ptr> m_clients;
 				std::mutex m_clientsLock;
-				std::atomic<bool> m_clientsChanged;
 
 				std::map<const IpcMessageId, details::IpcQueueRequestItem_ptr> m_requests;
 				std::mutex m_requestsLock;

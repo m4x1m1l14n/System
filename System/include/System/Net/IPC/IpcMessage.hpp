@@ -36,12 +36,47 @@ namespace System
 
 				}
 
-				virtual ~IpcMessage()
+				IpcMessage(const IpcMessageConfig config, const IpcMessageId id, const std::string& payload)
+					: m_config(config)
+					, m_id(id)
+					, m_payload(payload)
 				{
 
 				}
 
-				// TODO When parsing message from buffer, store frame 
+				static IpcMessage_ptr CreateServerRequest(const IpcMessageId id, const std::string& payload)
+				{
+					const auto config = IpcServerMessageFlag | IpcRequestFlag;
+
+					return std::make_shared<IpcMessage>(config, id, payload);
+				}
+
+				static IpcMessage_ptr CreateServerResponse(const IpcMessageId id, const std::string& payload)
+				{
+					const auto config = IpcServerMessageFlag | IpcResponseFlag;
+
+					return std::make_shared<IpcMessage>(config, id, payload);
+				}
+
+				static IpcMessage_ptr CreateClientRequest(const IpcMessageId id, const std::string& payload)
+				{
+					const auto config = IpcClientMessageFlag | IpcRequestFlag;
+
+					return std::make_shared<IpcMessage>(config, id, payload);
+				}
+
+				static IpcMessage_ptr CreateClientResponse(const IpcMessageId id, const std::string& payload)
+				{
+					const auto config = IpcClientMessageFlag | IpcResponseFlag;
+
+					return std::make_shared<IpcMessage>(config, id, payload);
+				}
+
+				virtual ~IpcMessage()
+				{
+
+				}
+ 
 				static IpcMessage_ptr PeekFromBuffer(std::string& buffer)
 				{
 					// Check if buffer starts with frame start indicator
@@ -57,7 +92,7 @@ namespace System
 						return IpcMessage_ptr();
 					}
 
-					const auto payloadLen = *reinterpret_cast<const IpcMessageLength*>(&buffer[1]);
+					const auto payloadLen = *reinterpret_cast<const IpcMessageLength*>(&buffer[sizeof(IpcMessageStart)]);
 					const auto messageLen = IpcMessageHeaderSize + payloadLen;
 					if (buffer.size() < messageLen)
 					{
@@ -65,24 +100,57 @@ namespace System
 						return IpcMessage_ptr();
 					}
 
-					const auto id = *reinterpret_cast<const IpcMessageId*>(&buffer[1 + sizeof(payloadLen)]);
-					const auto& payload = buffer.substr(1 + sizeof(payloadLen) + sizeof(id), payloadLen);
+					const auto config = static_cast<IpcMessageConfig>(buffer[sizeof(IpcMessageStart) + sizeof(IpcMessageLength)]);
+					const auto id = *reinterpret_cast<const IpcMessageId*>(&buffer[sizeof(IpcMessageStart) + sizeof(payloadLen) + sizeof(config)]);
+					const auto& payload = buffer.substr(sizeof(IpcMessageStart) + sizeof(payloadLen) + sizeof(config) + sizeof(id), payloadLen);
+
+					const auto& frame = buffer.substr(0, messageLen);
 
 					buffer.erase(0, messageLen);
 
-					auto message = std::make_shared<IpcMessage>(id, payload);
+					auto message = std::shared_ptr<IpcMessage>(new IpcMessage(config, id, payload, frame));
 
 					return message;
 				}
 
 				std::string& Payload()
 				{
+					if (m_payload.empty())
+					{
+						// TODO Parse from frame
+					}
+
 					return m_payload;
 				}
 
 				const IpcMessageId Id() const
 				{
 					return m_id;
+				}
+
+				IpcMessageConfig Config() const
+				{
+					return m_config;
+				}
+
+				bool IsRequest() const
+				{
+					return m_config & IpcRequestFlag;
+				}
+
+				bool IsResponse() const
+				{
+					return !this->IsRequest();
+				}
+
+				bool IsServerMessage() const
+				{
+					return m_config & IpcServerMessageFlag;
+				}
+
+				bool IsClientMessage() const
+				{
+					return !this->IsServerMessage();
 				}
 
 				std::string Frame()
@@ -99,6 +167,7 @@ namespace System
 
 						frame = IpcMessageStart;
 						frame.append(reinterpret_cast<const char*>(&payloadLen), sizeof(payloadLen));
+						frame.append(reinterpret_cast<const char*>(&m_config), sizeof(m_config));
 						frame.append(reinterpret_cast<const char*>(&m_id), sizeof(m_id));
 						frame.append(m_payload);
 
@@ -109,7 +178,19 @@ namespace System
 				}
 
 			protected:
+				IpcMessage(const IpcMessageConfig config, const IpcMessageId id, const std::string& payload, const std::string& frame)
+					: m_config(config)
+					, m_id(id)
+					, m_payload(payload)
+					, m_frame(frame)
+				{
+
+				}
+
+			protected:
 				IpcMessageId m_id;
+				IpcMessageConfig m_config;
+
 				std::string m_payload;
 				std::string m_frame;
 			};
