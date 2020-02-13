@@ -259,10 +259,13 @@ namespace System
 
 					// Signal to transmitter event, that writing
 					// data to socket cannot be done
-					m_connectedEvent->Reset();
+					if (m_connectedEvent->IsSet())
+					{
+						m_connectedEvent->Reset();
 
-					// Signal to dispatcher object, that IPC client was disconnected
-					this->Invoke_OnDisconnected();
+						// Signal to dispatcher object, that IPC client was disconnected
+						this->Invoke_OnDisconnected();
+					}
 
 					// Add 50 seconds to reconnect
 					if (waitTime < 1000)
