@@ -20,20 +20,33 @@ namespace System
 			typedef std::uint64_t IpcClientId;
 			typedef std::uint64_t IpcMessageId;
 			typedef std::uint32_t IpcMessageLength;
+			// TODO Rename to IpcMessageFlags
+			typedef unsigned char IpcMessageConfig;
 
-			const IpcMessageId IpcRegisterMessageId = 0;
+			constexpr IpcMessageId IpcRegisterMessageId = 0;
 
-			const char IpcMessageStart = -86; // 0xAA in hex
+			constexpr char IpcMessageStart = -86; // 0xAA in hex
 
-			const std::uint64_t IpcServerRequestFlag = 0x8000000000000000;
-			const std::uint64_t IpcClientRequestFlag = 0x0000000000000000;
+			constexpr IpcMessageConfig IpcServerMessageFlag = 0b10000000;
+			constexpr IpcMessageConfig IpcClientMessageFlag = 0b00000000;
+
+			constexpr IpcMessageConfig IpcRequestFlag = 0b01000000;
+			constexpr IpcMessageConfig IpcResponseFlag = 0b00000000;
+
+			constexpr IpcMessageConfig IpcServerRequestFlags = IpcServerMessageFlag | IpcRequestFlag;
+			constexpr IpcMessageConfig IpcClientRequestFlags = IpcClientMessageFlag | IpcRequestFlag;
+
 			constexpr IpcClientId IpcInvalidClientId = 0;
 			
 			// IPC message header
 			//	1 byte 0xAA - frame start identificator
 			//	4 bytes		- length of message payload
 			//	8 bytes		- message id
-			const auto IpcMessageHeaderSize = sizeof(IpcMessageStart) + sizeof(IpcMessageLength) + sizeof(IpcMessageId);
+			constexpr auto IpcMessageHeaderSize = 
+				sizeof(IpcMessageStart) +  
+				sizeof(IpcMessageLength) +
+				sizeof(IpcMessageConfig) +
+				sizeof(IpcMessageId);
 		}
 	}
 }

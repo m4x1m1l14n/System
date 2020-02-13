@@ -49,7 +49,7 @@ namespace System
 
 			private:
 				IpcClientId CreateClientId();
-				inline IpcMessageId GenerateRequestId(const IpcClientId clientId);
+				inline IpcMessageId GenerateRequestId();
 
 				void RxThread(std::string host, int port);
 				void TxThread();
@@ -62,6 +62,7 @@ namespace System
 				void DispatchExpiredMessages();
 				void DispatchExpiredRequests();
 				void CancelPendingMessages();
+				void ProcessResponse(const IpcMessage_ptr response);
 
 				details::IpcQueueItem_ptr PopQueueItem(size_t& prevQueueSize);
 

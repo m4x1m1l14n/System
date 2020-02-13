@@ -9,6 +9,26 @@ using namespace System::Threading;
 using namespace System::Net::Sockets;
 
 
+#ifdef _DEBUG
+
+#include <sstream>
+
+#define __DBG__(val)										\
+do {														\
+	std::stringstream __ss;									\
+	__ss << val;											\
+	__ss << " [" << __FILE__ << ": " << __LINE__ << "]";	\
+	__ss << "\n";											\
+	::OutputDebugStringA(__ss.str().c_str());				\
+} while (0)
+
+#else
+
+#define __DBG__(val) ((void)0)
+
+#endif
+
+
 namespace System
 {
 	namespace Net
@@ -17,12 +37,6 @@ namespace System
 		{
 			class IpcClientDefaultDispatcher
 				: public IpcClientDispatcher
-			{
-
-			};
-
-			class IpcClientImpl
-				: public IpcClient
 			{
 
 			};
@@ -89,9 +103,9 @@ namespace System
 
 			IpcMessage_ptr IpcClient::CreateRequest(const std::string& data)
 			{
-				const auto id = this->GenerateRequestId(m_clientId);
+				const auto id = this->GenerateRequestId();
 
-				const auto& request = std::make_shared<IpcMessage>(id, data);
+				const auto& request = IpcMessage::CreateClientRequest(id, data);
 
 				return request;
 			}
@@ -100,7 +114,7 @@ namespace System
 			{
 				const auto id = request->Id();
 
-				const auto& response = std::make_shared<IpcMessage>(id, data);
+				const auto& response = IpcMessage::CreateClientResponse(id, data);
 
 				return response;
 			}
@@ -123,9 +137,9 @@ namespace System
 					std::lock_guard<std::mutex> guard(m_queueLock);
 
 					m_queue.push_back(requestQueueItem);
-
-					m_queueChangedEvent->Set();
 				}
+
+				m_queueChangedEvent->Set();
 
 				return requestQueueItem->Wait();
 			}
@@ -148,13 +162,27 @@ namespace System
 					std::lock_guard<std::mutex> guard(m_queueLock);
 
 					m_queue.push_back(responseQueueItem);
-
-					m_queueChangedEvent->Set();
 				}
+
+				m_queueChangedEvent->Set();
 
 				responseQueueItem->Wait();
 			}
 
+			/**
+			 * Constructs IPC client ID
+			 *
+			 * Client ID is 64 bit unsigned integer which upper 32 bits contains process ID of process
+			 * owning this instance and lower 32 bit part contains unique instance number of this IPC client.
+			 *
+			 *  _________________________________
+			 * |    63 - 32    |     31 - 0      |
+			 * |---------------------------------|
+			 * |   Process ID  | Instance number |
+			 * |---------------------------------|
+			 *
+			 * @return IPC client ID
+			 */
 			IpcClientId IpcClient::CreateClientId()
 			{
 				const auto processId = ::GetCurrentProcessId();
@@ -163,10 +191,17 @@ namespace System
 				return clientId;
 			}
 
-			inline IpcMessageId IpcClient::GenerateRequestId(const IpcClientId clientId)
+			/**
+			 * Generates unique IPC client request ID
+			 *
+			 * IPC client request ID consists of IPC client request flag (MSB set to 0)
+			 * and per instance unique message ID number
+			 *
+			 * @return IPC client request ID
+			 */
+			inline IpcMessageId IpcClient::GenerateRequestId()
 			{
-				// TODO Reserve space for chaining messages
-				return static_cast<std::uint64_t>(clientId) << 31 | (s_messageIdIterator++ & 0x7fffffff);
+				return s_messageIdIterator++;
 			}
 
 			void IpcClient::RxThread(std::string host, int port)
@@ -201,25 +236,9 @@ namespace System
 						{
 							auto message = this->ReadMessage();
 
-							this->Invoke_DecryptPayload(message->Payload());
-
-							details::IpcQueueRequestItem_ptr requestQueueItem;
-
+							if (message->IsResponse())
 							{
-								std::lock_guard<std::mutex> guard(m_requestsLock);
-
-								auto iter = m_requests.find(message->Id());
-								if (iter != m_requests.end())
-								{
-									requestQueueItem = iter->second;
-
-									m_requests.erase(iter);
-								}
-							}
-
-							if (requestQueueItem)
-							{
-								requestQueueItem->SetResult(message);
+								this->ProcessResponse(message);
 							}
 							else
 							{
@@ -230,7 +249,8 @@ namespace System
 					}
 					catch (const System::OperationCanceledException&)
 					{
-						// In case of operation cancelled, do not report error
+						// NOTE
+						//	In case of operation cancelled, do not report error
 					}
 					catch (const std::exception& ex)
 					{
@@ -251,8 +271,6 @@ namespace System
 					}
 
 				} while (m_terminateEvent->WaitOne(waitTime) == EventWaitHandle::WaitTimeout);
-
-				std::cout << "Worker thread stopped" << std::endl;
 			}
 
 			void IpcClient::TxThread()
@@ -315,7 +333,7 @@ namespace System
 									}
 									catch (const std::exception& ex)
 									{
-										std::cout << ex.what() << std::endl;
+										m_pDispatcher->IpcClient_OnError(ex);
 									}
 
 									m_writeDoneEvent->Set();
@@ -361,7 +379,7 @@ namespace System
 
 				this->Invoke_EncyptPayload(payload);
 
-				const auto message = std::make_shared<IpcMessage>(IpcRegisterMessageId, payload);
+				const auto message = IpcMessage::CreateClientRequest(IpcRegisterMessageId, payload);
 				const auto timeout = Timeout::ElapseAfter(TimeSpan::FromSeconds(5));
 
 				this->WriteMessage(socket, message, timeout);
@@ -371,7 +389,7 @@ namespace System
 			{
 				const auto& frame = message->Frame();
 
-				socket->Write(frame, timeout, m_terminateEvent);
+				socket->WriteAll(frame, timeout, m_terminateEvent);
 			}
 
 			// Read whole IPC message from socket
@@ -457,6 +475,32 @@ namespace System
 				}
 
 				m_queue.clear();
+			}
+
+			void IpcClient::ProcessResponse(const IpcMessage_ptr response)
+			{
+				details::IpcQueueRequestItem_ptr requestQueueItem;
+
+				{
+					std::lock_guard<std::mutex> guard(m_requestsLock);
+
+					const auto iter = m_requests.find(response->Id());
+					if (iter != m_requests.end())
+					{
+						requestQueueItem = iter->second;
+
+						m_requests.erase(iter);
+					}
+				}
+
+				if (requestQueueItem)
+				{
+					requestQueueItem->SetResult(response);
+				}
+				else
+				{
+					// TODO Received response but no request is awaiting in queue
+				}
 			}
 
 			details::IpcQueueItem_ptr IpcClient::PopQueueItem(size_t& prevQueueSize)

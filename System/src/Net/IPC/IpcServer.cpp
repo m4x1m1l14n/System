@@ -37,13 +37,6 @@ namespace System
 				}
 			}
 
-
-			class IpcServerImpl
-				: public IpcServer
-			{
-			};
-
-
 			std::atomic<std::uint32_t> IpcServer::s_messageIdIterator = 1;
 
 			IpcServer::IpcServer(int port, IpcServerDispatcher * pDispatcher)
@@ -51,7 +44,7 @@ namespace System
 				, m_pDispatcher(pDispatcher)
 				, m_terminateEvent(std::make_shared<ManualResetEvent>())
 			{
-#if 0
+#if defined(_DEBUG) && 0
 				if (pDispatcher == nullptr)
 				{
 					throw std::invalid_argument("dispatcher cannot be null");
@@ -95,8 +88,9 @@ namespace System
 			IpcMessage_ptr IpcServer::CreateRequest(const std::string& data)
 			{
 				const auto id = this->GenerateRequestId();
+				const auto request = IpcMessage::CreateServerRequest(id, data);
 
-				return std::make_shared<IpcMessage>(id, data);
+				return request;
 			}
 
 
@@ -104,7 +98,7 @@ namespace System
 			IpcMessage_ptr IpcServer::CreateResponse(const IpcMessage_ptr request, const std::string& data)
 			{
 				const auto id = request->Id();
-				const auto response = std::make_shared<IpcMessage>(id, data);
+				const auto response = IpcMessage::CreateServerResponse(id, data);
 
 				return response;
 			}
@@ -143,7 +137,7 @@ namespace System
 					auto iter = m_clients.find(clientId);
 					if (iter == m_clients.end())
 					{
-						throw std::invalid_argument("ClientId \"" + std::to_string(clientId) + "\" not found!");
+						throw std::invalid_argument("IPC client with ID " + std::to_string(clientId) + " not found!");
 					}
 					else
 					{
@@ -162,11 +156,11 @@ namespace System
 			}
 
 
-
 			void IpcServer::SendResponse(const IpcClientId clientId, const IpcMessage_ptr response)
 			{
 				return this->SendResponse(clientId, response, Timeout::Infinite);
 			}
+
 
 			void IpcServer::SendResponse(const IpcClientId clientId, const IpcMessage_ptr response, const System::Timeout& timeout)
 			{
@@ -183,7 +177,7 @@ namespace System
 					auto iter = m_clients.find(clientId);
 					if (iter == m_clients.end())
 					{
-						throw std::invalid_argument("ClientId \"" + std::to_string(clientId) + "\" not found!");
+						throw std::invalid_argument("IPC client with ID " + std::to_string(clientId) + " not found!");
 					}
 					else
 					{
@@ -202,16 +196,47 @@ namespace System
 			}
 
 
-
 			/**
-			*	Generates unique server request id
-			*
-			*	Request id consists of IPC server request flag, which is MSB set to 1. Whole 32 bit client Id
-			*	and 31 bits of message unique iterator
-			*/
+			 * Generates unique server IPC request ID number
+			 *
+			 * Request ID consists of IPC server request flag (which is MSB set to 1)
+			 * and per instance unique message ID number.
+			 *
+			 *  _________________________
+			 * |   63  |     62 - 0      |
+			 * |-------------------------|
+			 * |   1   | request number	 |
+			 * |-------------------------|
+			 *
+			 * @return Unique IPC server request ID
+			 */
 			inline IpcMessageId IpcServer::GenerateRequestId()
 			{
-				return IpcServerRequestFlag | (s_messageIdIterator++ & 0x7fffffff);
+				return s_messageIdIterator++;
+			}
+
+
+			void RemoveClientsWithExpiredRegistration(std::map<SOCKET, details::Client_ptr>& clients)
+			{
+				if (clients.empty())
+				{
+					return;
+				}
+
+				for (auto iter = clients.begin(); iter != clients.end(); /* DO NOT INCREMENT */)
+				{
+					const auto& client = iter->second;
+					const auto& timeout = client->timeout;
+
+					if (timeout.GetIsElapsed())
+					{
+						iter = clients.erase(iter);
+					}
+					else
+					{
+						++iter;
+					}
+				}
 			}
 
 
@@ -241,36 +266,18 @@ namespace System
 
 						auto maxfds = static_cast<int>(sock) + 1;
 
-						// Handle exceptions from caller code
-						try
-						{
-							m_pDispatcher->IpcServer_Opened();
-						}
-						catch (const std::exception&) {}
+						this->Invoke_Opened();
 
 						do
 						{
-							// Close all timeouted registrations
-							for (auto iter = pendingClients.begin(); iter != pendingClients.end(); /* DO NOT INCREMENT */)
-							{
-								auto& client = iter->second;
-
-								if (client->timeout.GetIsElapsed())
-								{
-									iter = pendingClients.erase(iter);
-								}
-								else
-								{
-									++iter;
-								}
-							}
+							RemoveClientsWithExpiredRegistration(pendingClients);
 
 							// Cleanup fd sets
 							FD_ZERO(&readfds);
 							FD_ZERO(&writefds);
 							FD_ZERO(&errorfds);
 
-							// Add server socket to read & error fd set only
+							// Add server socket only to read & error set,
 							// because no write to server socket is required
 							FD_SET(sock, &readfds);
 							FD_SET(sock, &errorfds);
@@ -295,9 +302,13 @@ namespace System
 								continue;
 							}
 
+							// We cannot recover from error on select API
+							// throw to leave looping
 							if (err == SOCKET_ERROR)
 							{
-								throw SocketException(::WSAGetLastError());
+								const auto lastError = ::WSAGetLastError();
+
+								throw SocketException(lastError);
 							}
 
 							// Check errors on sockets
@@ -345,13 +356,13 @@ namespace System
 										auto pendingClient = new details::Client();
 
 										pendingClient->socket = clientSocket;
-										pendingClient->timeout = Timeout::ElapseAfter(TimeSpan::FromSeconds(5000)); // TODO just debug
+										pendingClient->timeout = Timeout::ElapseAfter(TimeSpan::FromSeconds(5));
 
 										pendingClients[static_cast<SOCKET>(*clientSocket)] = std::shared_ptr<details::Client>(pendingClient);
 									}
 									catch (const std::exception& ex)
 									{
-										std::cout << ex.what() << std::endl;
+										this->Invoke_OnError(ex);
 									}
 
 									--count;
@@ -375,30 +386,21 @@ namespace System
 
 											client->rxBuffer.append(data);
 
-											std::string payload;
-
 											auto message = IpcMessage::PeekFromBuffer(client->rxBuffer);
 											if (message)
 											{
-												const auto messageId = message->Id();
 												auto payload = message->Payload();
 
-												try
-												{
-													m_pDispatcher->IpcServer_DecryptPayload(payload);
-												}
-												catch (const std::exception & ex)
-												{
-													// TODO What now?
-												}
+												this->Invoke_DecryptPayload(payload);
 
-												// Payload during registration contains client-id
-												if (messageId != IpcRegisterMessageId || payload.length() != sizeof(IpcClientId))
+												// Payload during registration contains client-id only
+												if (message->Id() != IpcRegisterMessageId || payload.length() != sizeof(IpcClientId))
 												{
 													throw std::runtime_error("Wrong registration payload!");
 												}
 												
 												const auto clientId = *reinterpret_cast<const IpcClientId*>(payload.data());
+												client->clientId = clientId;
 
 												{
 													// Enqueue client to worker thread
@@ -410,12 +412,21 @@ namespace System
 													m_clients[clientId] = client;
 												}
 
-												// Invoke client connected callback, but care for exceptions in user code
-												try
+												this->Invoke_ClientConnected(clientId);
+
+												// Dispatch all received messages
+												while (!client->rxBuffer.empty())
 												{
-													m_pDispatcher->IpcServer_ClientConnected(clientId);
+													message = IpcMessage::PeekFromBuffer(client->rxBuffer);
+													if (message)
+													{
+														this->Invoke_OnMessage(clientId, message);
+													}
+													else
+													{
+														break;
+													}
 												}
-												catch (const std::exception&) { }
 
 												// We moved client after successfull registration
 												// to connected clients, so we can erase it from pending
@@ -427,7 +438,7 @@ namespace System
 										{
 											eraseClient = true;
 
-											std::cout << ex.what() << std::endl;
+											this->Invoke_OnError(ex);
 										}
 
 										// Decrement count of processed socket events
@@ -454,8 +465,7 @@ namespace System
 					}
 					catch (const std::exception& ex)
 					{
-						// TODO onerror dispatch
-						std::cout << ex.what() << std::endl;
+						this->Invoke_OnError(ex);
 					}
 
 					if (waitTime < 3000)
@@ -600,34 +610,31 @@ namespace System
 
 											client->rxBuffer.append(data);
 
-											auto message = IpcMessage::PeekFromBuffer(client->rxBuffer);
-											if (message)
+											do
 											{
-												const auto& clientId = iter->first;
-
-												details::IpcQueueRequestItem_ptr requestQueueItem;
-
+												auto message = IpcMessage::PeekFromBuffer(client->rxBuffer);
+												if (message)
 												{
-													std::lock_guard<std::mutex> guard(m_requestsLock);
-
-													auto iter = m_requests.find(message->Id());
-													if (iter != m_requests.end())
+													if (message->IsResponse())
 													{
-														requestQueueItem = iter->second;
+														this->ProcessResponse(message);
 													}
-												}
+													else
+													{
+														const auto& clientId = iter->first;
 
-												if (requestQueueItem)
-												{
-													requestQueueItem->SetResult(message);
+														this->Invoke_OnMessage(clientId, message);
+													}
 												}
 												else
 												{
-													m_pDispatcher->IpcServer_OnMessage(clientId, message);
+													break;
 												}
-											}
+
+											} while (!client->rxBuffer.empty());
+											
 										}
-										catch (const std::exception& ex)
+										catch (const std::exception&)
 										{
 											// TODO Separate method to remove client
 											const auto clientId = iter->first;
@@ -636,8 +643,8 @@ namespace System
 											iter = m_clients.erase(iter);
 
 											erased = true;
-
-											m_pDispatcher->IpcServer_ClientDisconnected(clientId);
+											
+											this->Invoke_ClientDisconnected(clientId);
 										}
 
 										--count;
@@ -657,7 +664,7 @@ namespace System
 							{
 								auto count = writefds.fd_count;
 
-								for (auto iter = m_clients.begin(); iter != m_clients.end() && count > 0; /* DO NOT INCREMENT */)
+								for (auto iter = m_clients.begin(); iter != m_clients.end() && count > 0; ++iter)
 								{
 									const auto& client = iter->second;
 
@@ -733,6 +740,113 @@ namespace System
 						: waitTime += 50;
 
 				} while (m_terminateEvent->WaitOne(waitTime) == EventWaitHandle::WaitTimeout);
+			}
+
+
+			void IpcServer::ProcessResponse(const IpcMessage_ptr response)
+			{
+				details::IpcQueueRequestItem_ptr requestQueueItem;
+
+				{
+					std::lock_guard<std::mutex> guard(m_requestsLock);
+
+					auto iter = m_requests.find(response->Id());
+					if (iter != m_requests.end())
+					{
+						requestQueueItem = iter->second;
+					}
+				}
+
+				if (requestQueueItem)
+				{
+					requestQueueItem->SetResult(response);
+				}
+				else
+				{
+					// TODO Received response but no request is awaiting in queue
+				}
+			}
+
+
+			void IpcServer::Invoke_Opened()
+			{
+				try
+				{
+					m_pDispatcher->IpcServer_Opened();
+				}
+				catch (const std::exception & ex)
+				{
+					this->Invoke_OnError(ex);
+				}
+			}
+
+			void IpcServer::Invoke_ClientConnected(const IpcClientId clientId)
+			{
+				try
+				{
+					m_pDispatcher->IpcServer_ClientConnected(clientId);
+				}
+				catch (const std::exception & ex)
+				{
+					this->Invoke_OnError(ex);
+				}
+			}
+
+			void IpcServer::Invoke_ClientDisconnected(const IpcClientId clientId)
+			{
+				try
+				{
+					m_pDispatcher->IpcServer_ClientDisconnected(clientId);
+				}
+				catch (const std::exception & ex)
+				{
+					this->Invoke_OnError(ex);
+				}
+			}
+
+			void IpcServer::Invoke_OnMessage(const IpcClientId clientId, const IpcMessage_ptr message)
+			{
+				try
+				{
+					m_pDispatcher->IpcServer_OnMessage(clientId, message);
+				}
+				catch (const std::exception & ex)
+				{
+					this->Invoke_OnError(ex);
+				}
+			}
+
+			void IpcServer::Invoke_EncryptPayload(std::string& payload)
+			{
+				try
+				{
+					m_pDispatcher->IpcServer_EncryptPayload(payload);
+				}
+				catch (const std::exception & ex)
+				{
+					this->Invoke_OnError(ex);
+				}
+			}
+
+			void IpcServer::Invoke_DecryptPayload(std::string& payload)
+			{
+				try
+				{
+					m_pDispatcher->IpcServer_DecryptPayload(payload);
+				}
+				catch (const std::exception & ex)
+				{
+					this->Invoke_OnError(ex);
+				}
+			}
+
+			void IpcServer::Invoke_OnError(const std::exception& ex)
+			{
+				try
+				{
+					m_pDispatcher->IpcServer_OnError(ex);
+				}
+				catch (const std::exception &) { }
 			}
 
 		}
