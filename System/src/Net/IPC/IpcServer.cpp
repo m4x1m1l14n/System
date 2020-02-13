@@ -37,7 +37,9 @@ namespace System
 				}
 			}
 
+
 			std::atomic<std::uint32_t> IpcServer::s_messageIdIterator = 1;
+
 
 			IpcServer::IpcServer(int port, IpcServerDispatcher * pDispatcher)
 				: m_port(port)
@@ -52,6 +54,7 @@ namespace System
 #endif
 			}
 
+
 			/**
 			* Class dtor
 			*
@@ -61,6 +64,7 @@ namespace System
 			{
 				this->Stop();
 			}
+
 
 			void IpcServer::Start()
 			{
@@ -72,6 +76,7 @@ namespace System
 				m_workerThread = std::thread(&IpcServer::WorkerThread, this);
 			}
 
+
 			void IpcServer::Stop()
 			{
 				m_terminateEvent->Set();
@@ -80,10 +85,12 @@ namespace System
 				if (m_workerThread.joinable()) { m_workerThread.join(); }
 			}
 
+
 			int IpcServer::Port() const
 			{
 				return m_port;
 			}
+
 
 			IpcMessage_ptr IpcServer::CreateRequest(const std::string& data)
 			{
@@ -92,7 +99,6 @@ namespace System
 
 				return request;
 			}
-
 
 
 			IpcMessage_ptr IpcServer::CreateResponse(const IpcMessage_ptr request, const std::string& data)
@@ -104,11 +110,11 @@ namespace System
 			}
 
 
-
 			IpcMessage_ptr IpcServer::SendRequest(const IpcClientId clientId, const IpcMessage_ptr request)
 			{
 				return this->SendRequest(clientId, request, Timeout::Infinite);
 			}
+
 
 			/** Sends request to specified client
 			 * 
@@ -215,7 +221,11 @@ namespace System
 				return s_messageIdIterator++;
 			}
 
-
+			/**
+			 * Removes clients from map, which was connected successfully connected on network layer,
+			 * but did not sent registration message within specified timeout and thus their
+			 * registration is considered expired.
+			 */
 			void RemoveClientsWithExpiredRegistration(std::map<SOCKET, details::Client_ptr>& clients)
 			{
 				if (clients.empty())
@@ -708,6 +718,12 @@ namespace System
 
 														m_requests[request->Id()] = requestQueueItem;
 													}
+												}
+												else
+												{
+													const auto responseQueueItem = std::dynamic_pointer_cast<details::IpcQueueResponseItem>(queueItem);
+
+													responseQueueItem->SetResult();
 												}
 
 												client->txQueue.pop_front();
