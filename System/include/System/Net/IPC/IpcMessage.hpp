@@ -46,28 +46,28 @@ namespace System
 
 				static IpcMessage_ptr CreateServerRequest(const IpcMessageId id, const std::string& payload)
 				{
-					const auto config = IpcServerMessageFlag | IpcRequestFlag;
+					const IpcMessageConfig config = IpcServerMessageFlag | IpcRequestFlag;
 
 					return std::make_shared<IpcMessage>(config, id, payload);
 				}
 
 				static IpcMessage_ptr CreateServerResponse(const IpcMessageId id, const std::string& payload)
 				{
-					const auto config = IpcServerMessageFlag | IpcResponseFlag;
+					const IpcMessageConfig config = IpcServerMessageFlag | IpcResponseFlag;
 
 					return std::make_shared<IpcMessage>(config, id, payload);
 				}
 
 				static IpcMessage_ptr CreateClientRequest(const IpcMessageId id, const std::string& payload)
 				{
-					const auto config = IpcClientMessageFlag | IpcRequestFlag;
+					const IpcMessageConfig config = IpcClientMessageFlag | IpcRequestFlag;
 
 					return std::make_shared<IpcMessage>(config, id, payload);
 				}
 
 				static IpcMessage_ptr CreateClientResponse(const IpcMessageId id, const std::string& payload)
 				{
-					const auto config = IpcClientMessageFlag | IpcResponseFlag;
+					const IpcMessageConfig config = IpcClientMessageFlag | IpcResponseFlag;
 
 					return std::make_shared<IpcMessage>(config, id, payload);
 				}
