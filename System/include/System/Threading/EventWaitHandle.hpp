@@ -11,7 +11,8 @@ namespace System
 {
 	namespace Threading
 	{
-		enum EventResetMode {
+		enum class EventResetMode
+		{
 			AutoReset,
 			ManualReset
 		};
