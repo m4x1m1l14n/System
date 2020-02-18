@@ -10,6 +10,7 @@ namespace System
 	{
 		namespace Sockets
 		{
+			// TODO Inherit from system_error or format message based on socket error code
 			class SocketException
 				: public std::exception
 			{

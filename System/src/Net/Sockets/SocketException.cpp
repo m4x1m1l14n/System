@@ -14,9 +14,12 @@ namespace System
 
 			SocketException::SocketException(unsigned int errorCode, const std::string& message)
 				: m_errorCode(errorCode)
-				, m_message(message)
 			{
-
+				m_message = "Error code: " + std::to_string(errorCode);
+				if (!message.empty())
+				{
+					m_message += ". " + message;
+				}
 			}
 
 			SocketException::~SocketException() throw()
