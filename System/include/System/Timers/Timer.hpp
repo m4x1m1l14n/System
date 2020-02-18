@@ -4,73 +4,15 @@
 ///
 #pragma once
 
-#include <Windows.h>
 #include <assert.h>
 
-#include <helpers.h>
-
+#include <System/Timers/TimerFlags.hpp>
 #include <System/TimeSpan.hpp>
 
 namespace System
 {
 	namespace Timers
 	{
-		enum class TimerFlags : ULONG
-		{
-			/// <summary>
-			/// By default, the callback function is queued to a non-I/O worker thread.
-			/// </summary>
-			ExecuteDefault = WT_EXECUTEDEFAULT,
-
-			/// <summary>
-			/// The callback function is invoked by the timer thread itself. This flag 
-			/// should be used only for short tasks or it could affect other timer operations. 
-			/// The callback function is queued as an APC. It should not perform alertable 
-			/// wait operations.
-			/// </summary>
-			ExecuteInTimerThread = WT_EXECUTEINTIMERTHREAD,
-
-			/// <summary>
-			/// The callback function is queued to an I/O worker thread. This flag should 
-			/// be used if the function should be executed in a thread that waits in an 
-			/// alertable state. 
-			/// The callback function is queued as an APC. Be sure to address reentrancy 
-			/// issues if the function performs an alertable wait operation.
-			/// </summary>
-			ExecuteInIOThread = WT_EXECUTEINIOTHREAD,
-
-			/// <summary>
-			/// The callback function is queued to a thread that never terminates. It 
-			/// does not guarantee that the same thread is used each time. This flag 
-			/// should be used only for short tasks or it could affect other timer 
-			/// operations. currently no worker thread is truly persistent, 
-			/// although no worker thread will terminate if there are any pending I/O 
-			/// requests.
-			/// </summary>
-			ExecuteInPersistentThread = WT_EXECUTEINPERSISTENTTHREAD,
-
-			/// <summary>
-			/// The callback function can perform a long wait. This flag helps the 
-			/// system to decide if it should create a new thread.
-			/// </summary>
-			ExecuteLongFunction = WT_EXECUTELONGFUNCTION,
-
-			/// <summary>
-			/// The timer will be set to the signaled state only once. If this flag 
-			/// is set, the Period parameter must be zero.
-			/// </summary>
-			ExecuteOnlyOnce = WT_EXECUTEONLYONCE,
-
-			/// <summary>
-			/// Callback functions will use the current access token, whether it 
-			/// is a process or impersonation token. If this flag is not specified, 
-			/// callback functions execute only with the process token.
-			/// Windows XP/2000:  This flag is not supported until Windows XP with 
-			/// SP2 and Windows Server 2003.
-			/// </summary>
-			TransferImpersonation = WT_TRANSFER_IMPERSONATION
-		};
-
 		DEFINE_ENUM_FLAG_OPERATORS(TimerFlags);
 
 		namespace details
@@ -81,9 +23,6 @@ namespace System
 			class TimerBase
 			{
 			public:
-				static const size_t DefaultDueTime = 0;
-
-			public:
 				TimerBase()
 					: m_hTimer(nullptr)
 				{
@@ -92,15 +31,33 @@ namespace System
 
 				~TimerBase()
 				{
-					Stop();
+					try
+					{
+						Stop();
+					}
+					catch (...) { }
 				}
 
-				void Start(TimeSpan interval, size_t dueTime = DefaultDueTime, TimerFlags flags = TimerFlags::ExecuteDefault)
+				void Start(const TimeSpan& interval)
 				{
-					Start(static_cast<size_t>(interval.GetTotalMilliseconds()), dueTime, flags);
+					this->Start(interval, TimeSpan::Zero());
+				}
+
+				void Start(const TimeSpan& interval, const TimeSpan& dueTime)
+				{
+					this->Start(interval, dueTime, TimerFlags::ExecuteDefault);
+				}
+
+				void Start(const TimeSpan& interval, const TimeSpan& dueTime, const TimerFlags flags)
+				{
+					this->Start(
+						static_cast<size_t>(interval.GetTotalMilliseconds()),
+						static_cast<size_t>(dueTime.GetTotalMilliseconds()), 
+						flags
+					);
 				}
 				
-				void Start(size_t interval, size_t dueTime = DefaultDueTime, TimerFlags flags = TimerFlags::ExecuteDefault)
+				void Start(size_t interval, size_t dueTime, TimerFlags flags)
 				{
 					if ((flags & TimerFlags::ExecuteOnlyOnce) == TimerFlags::ExecuteOnlyOnce)
 					{
@@ -131,10 +88,18 @@ namespace System
 					if (m_hTimer)
 					{
 						BOOL fSuccess = ::DeleteTimerQueueTimer(nullptr, m_hTimer, nullptr);
-						_unused(fSuccess);
-						assert(fSuccess);
-
+						
 						m_hTimer = nullptr;
+						
+						if (!fSuccess)
+						{
+							const auto lastError = ::GetLastError();
+
+							throw std::system_error(
+								std::error_code(lastError, std::system_category()),
+								"DeleteTimerQueueTimer() returned FALSE"
+							);
+						}
 					}
 				}
 
@@ -151,7 +116,6 @@ namespace System
 				void setInterval(size_t interval)
 				{
 					// TODO Change timer
-					_unused(interval);
 				}
 
 				__declspec(property(get = getInterval, put = setInterval)) size_t Interval;

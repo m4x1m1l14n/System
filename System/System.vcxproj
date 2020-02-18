@@ -176,6 +176,11 @@
     <ClCompile Include="src\IO\Directory.cpp" />
     <ClCompile Include="src\IO\File.cpp" />
     <ClCompile Include="src\IO\Path.cpp" />
+    <ClCompile Include="src\Logging\Log.cpp" />
+    <ClCompile Include="src\Logging\Logger.cpp" />
+    <ClCompile Include="src\Logging\LoggerFileSink.cpp" />
+    <ClCompile Include="src\Logging\LoggerOptions.cpp" />
+    <ClCompile Include="src\Logging\LoggerSink.cpp" />
     <ClCompile Include="src\Math.cpp" />
     <ClCompile Include="src\Net\Http.cpp" />
     <ClCompile Include="src\Net\Http\HttpClient.cpp" />
@@ -206,6 +211,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\System\Application.hpp" />
+    <ClInclude Include="include\System\DateTime.hpp" />
     <ClInclude Include="include\System\Diagnostics\FileVersionInfo.hpp" />
     <ClInclude Include="include\System\Diagnostics\Process.hpp" />
     <ClInclude Include="include\System\Diagnostics\ServiceManager.hpp" />
@@ -219,6 +225,12 @@
     <ClInclude Include="include\System\IO\Directory.hpp" />
     <ClInclude Include="include\System\IO\File.hpp" />
     <ClInclude Include="include\System\IO\Path.hpp" />
+    <ClInclude Include="include\System\Logging\Log.hpp" />
+    <ClInclude Include="include\System\Logging\Logger.hpp" />
+    <ClInclude Include="include\System\Logging\LoggerFileSink.hpp" />
+    <ClInclude Include="include\System\Logging\LoggerOptions.hpp" />
+    <ClInclude Include="include\System\Logging\LoggerSink.hpp" />
+    <ClInclude Include="include\System\Logging\LogSeverity.hpp" />
     <ClInclude Include="include\System\Math.hpp" />
     <ClInclude Include="include\System\Net\Http.hpp" />
     <ClInclude Include="include\System\Net\HttpStatusCode.hpp" />
@@ -260,6 +272,7 @@
     <ClInclude Include="include\System\Timeout.hpp" />
     <ClInclude Include="include\System\TimeoutException.hpp" />
     <ClInclude Include="include\System\Timers\Timer.hpp" />
+    <ClInclude Include="include\System\Timers\TimerFlags.hpp" />
     <ClInclude Include="include\System\TimeSpan.hpp" />
     <ClInclude Include="include\System\Version.hpp" />
     <ClInclude Include="include\Windows\Helpers.hpp" />
