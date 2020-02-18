@@ -507,7 +507,8 @@ namespace System
 
 					do
 					{
-						// TODO Remove expired messages to send
+						this->DispatchExpiredMessages();
+						this->DispatchExpiredRequests();
 
 						// Wait for some clients to connect
 						if (m_clients.empty())
@@ -684,7 +685,8 @@ namespace System
 										{
 											// NOTE
 											//	No other way should exists how we can get there
-											//	Some messages must be present in tx queue
+											//	Some messages must be present in tx queue.
+											//	If not so, search for bugs.
 											assert(!client->txQueue.empty());
 
 											const auto& queueItem = client->txQueue.front();
@@ -789,6 +791,59 @@ namespace System
 			}
 
 
+			void IpcServer::DispatchExpiredMessages()
+			{
+				if (m_clients.empty())
+				{
+					return;
+				}
+
+				{
+					std::lock_guard<std::mutex> guard(m_clientsLock);
+				
+					for (auto& iter : m_clients)
+					{
+						auto& client = iter.second;
+
+						for (auto& queueItem : client->txQueue)
+						{
+							if (queueItem->IsExpired())
+							{
+								const auto pex = std::make_exception_ptr(TimeoutException());
+
+								queueItem->SetResult(pex);
+							}
+						}
+					}
+				}
+			}
+
+
+			void IpcServer::DispatchExpiredRequests()
+			{
+				if (m_requests.empty())
+				{
+					return;
+				}
+
+				{
+					std::lock_guard<std::mutex> guard(m_requestsLock);
+
+					for (auto& iter : m_requests)
+					{
+						auto& queueItem = iter.second;
+
+						if (queueItem->IsExpired())
+						{
+							const auto pex = std::make_exception_ptr(TimeoutException());
+
+							queueItem->SetResult(pex);
+						}
+					}
+				}
+			}
+
+
 			void IpcServer::CancelPendingMessages()
 			{
 				std::lock_guard<std::mutex> guard(m_clientsLock);
@@ -811,7 +866,6 @@ namespace System
 
 			void IpcServer::CancelPendingRequests()
 			{
-
 				std::lock_guard<std::mutex> guard(m_requestsLock);
 
 				if (!m_requests.empty())
