@@ -70,6 +70,12 @@ namespace System
 
 				void ProcessResponse(const IpcMessage_ptr response);
 
+				void DispatchExpiredMessages();
+				void DispatchExpiredRequests();
+
+				void CancelPendingMessages();
+				void CancelPendingRequests();
+
 				void Invoke_Opened();
 				void Invoke_ClientConnected(const IpcClientId clientId);
 				void Invoke_ClientDisconnected(const IpcClientId clientId);

@@ -756,6 +756,9 @@ namespace System
 						: waitTime += 50;
 
 				} while (m_terminateEvent->WaitOne(waitTime) == EventWaitHandle::WaitTimeout);
+
+				this->CancelPendingMessages();
+				this->CancelPendingRequests();
 			}
 
 
@@ -785,6 +788,44 @@ namespace System
 				}
 			}
 
+
+			void IpcServer::CancelPendingMessages()
+			{
+				std::lock_guard<std::mutex> guard(m_clientsLock);
+
+				if (!m_clients.empty())
+				{
+					const auto pex = std::make_exception_ptr(OperationCanceledException());
+
+					for (auto& iter : m_clients)
+					{
+						auto& client = iter.second;
+
+						for (auto& queueItem : client->txQueue)
+						{
+							queueItem->SetResult(pex);
+						}
+					}
+				}
+			}
+
+			void IpcServer::CancelPendingRequests()
+			{
+
+				std::lock_guard<std::mutex> guard(m_requestsLock);
+
+				if (!m_requests.empty())
+				{
+					const auto pex = std::make_exception_ptr(OperationCanceledException());
+
+					for (auto& iter : m_requests)
+					{
+						auto& queueItem = iter.second;
+
+						queueItem->SetResult(pex);
+					}
+				}
+			}
 
 			void IpcServer::Invoke_Opened()
 			{
