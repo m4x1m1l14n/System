@@ -770,6 +770,8 @@ namespace System
 					if (iter != m_requests.end())
 					{
 						requestQueueItem = iter->second;
+
+						m_requests.erase(iter);
 					}
 				}
 
