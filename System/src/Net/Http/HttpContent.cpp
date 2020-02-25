@@ -42,7 +42,7 @@ namespace System
 			{
 				auto stop = false;
 
-				unsigned long long blockLen;
+				size_t blockLen;
 				
 				do
 				{
@@ -63,7 +63,7 @@ namespace System
 
 						if (pos != std::string::npos)
 						{
-							blockLen = std::stoull(m_buffer.substr(0, pos), nullptr, 16);
+							blockLen = static_cast<size_t>(std::stoull(m_buffer.substr(0, pos), nullptr, 16));
 							if (blockLen == 0)
 							{
 								stop = true;

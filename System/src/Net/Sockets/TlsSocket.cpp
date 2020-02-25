@@ -60,7 +60,7 @@ namespace System
 			{
 				auto ssl = m_ssl.get();
 
-				int tx_total = 0;
+				size_t tx_total = 0;
 				
 				do
 				{
