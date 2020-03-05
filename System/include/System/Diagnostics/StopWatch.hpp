@@ -7,14 +7,10 @@ namespace System
 {
 	namespace Diagnostics
 	{
-		class StopWatch;
-
-		typedef std::shared_ptr<StopWatch> StopWatch_ptr;
-
 		class StopWatch
 		{
 		public:
-			inline StopWatch()
+			StopWatch()
 				: m_begin(std::chrono::high_resolution_clock::now())
 			{
 
@@ -25,7 +21,10 @@ namespace System
 
 			}
 
-			void Reset();
+			void Reset()
+			{
+				m_begin = std::chrono::high_resolution_clock::now();
+			}
 
 			template <typename _Resolution = std::chrono::milliseconds>
 			uint64_t getElapsed() const
@@ -36,9 +35,9 @@ namespace System
 				);
 			}
 
-			static StopWatch_ptr StartNew()
+			static StopWatch StartNew()
 			{
-				return std::make_shared<StopWatch>();
+				return StopWatch();
 			}
 
 		private:
