@@ -801,17 +801,26 @@ namespace System
 				{
 					std::lock_guard<std::mutex> guard(m_clientsLock);
 				
-					for (auto& iter : m_clients)
+					for (auto& clientIterator : m_clients)
 					{
-						auto& client = iter.second;
+						auto& client = clientIterator.second;
+						auto& txQueue = client->txQueue;
 
-						for (auto& queueItem : client->txQueue)
+						for (auto queueIterator = txQueue.begin(); queueIterator != txQueue.end(); /* DO NOT INCREMENT */)
 						{
+							auto& queueItem = *queueIterator;
+
 							if (queueItem->IsExpired())
 							{
 								const auto pex = std::make_exception_ptr(TimeoutException());
 
 								queueItem->SetResult(pex);
+
+								queueIterator = txQueue.erase(queueIterator);
+							}
+							else
+							{
+								++queueIterator;
 							}
 						}
 					}
@@ -829,15 +838,21 @@ namespace System
 				{
 					std::lock_guard<std::mutex> guard(m_requestsLock);
 
-					for (auto& iter : m_requests)
+					for (auto iter = m_requests.begin(); iter != m_requests.end(); /* DO NOT INCREMENT */)
 					{
-						auto& queueItem = iter.second;
+						auto& request = iter->second;
 
-						if (queueItem->IsExpired())
+						if (request->IsExpired())
 						{
 							const auto pex = std::make_exception_ptr(TimeoutException());
 
-							queueItem->SetResult(pex);
+							request->SetResult(pex);
+
+							iter = m_requests.erase(iter);
+						}
+						else
+						{
+							++iter;
 						}
 					}
 				}
@@ -860,8 +875,10 @@ namespace System
 						{
 							queueItem->SetResult(pex);
 						}
+
+						client->txQueue.clear();
 					}
-				}
+				} 
 			}
 
 			void IpcServer::CancelPendingRequests()
@@ -878,6 +895,8 @@ namespace System
 
 						queueItem->SetResult(pex);
 					}
+
+					m_requests.clear();
 				}
 			}
 
