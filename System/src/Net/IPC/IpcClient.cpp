@@ -101,20 +101,20 @@ namespace System
 				return m_clientId;
 			}
 
-			IpcMessage_ptr IpcClient::CreateRequest(const std::string& data)
+			IpcMessage_ptr IpcClient::CreateRequest(const std::string& payload)
 			{
 				const auto id = this->GenerateRequestId();
 
-				const auto& request = IpcMessage::CreateClientRequest(id, data);
+				const auto& request = IpcMessage::CreateClientRequest(id, payload);
 
 				return request;
 			}
 
-			IpcMessage_ptr IpcClient::CreateResponse(const IpcMessage_ptr request, const std::string& data)
+			IpcMessage_ptr IpcClient::CreateResponse(const IpcMessage_ptr request, const std::string& payload)
 			{
 				const auto id = request->Id();
 
-				const auto& response = IpcMessage::CreateClientResponse(id, data);
+				const auto& response = IpcMessage::CreateClientResponse(id, payload);
 
 				return response;
 			}
@@ -380,8 +380,6 @@ namespace System
 
 				payload.append(reinterpret_cast<const char*>(&m_clientId), sizeof(m_clientId));
 
-				this->Invoke_EncyptPayload(payload);
-
 				const auto message = IpcMessage::CreateClientRequest(IpcRegisterMessageId, payload);
 				const auto timeout = Timeout::ElapseAfter(TimeSpan::FromSeconds(5));
 
@@ -390,6 +388,10 @@ namespace System
 
 			void IpcClient::WriteMessage(Socket_ptr socket, const IpcMessage_ptr message, const System::Timeout& timeout)
 			{
+				auto& payload = message->Payload();
+
+				this->Invoke_EncyptPayload(payload);
+
 				const auto& frame = message->Frame();
 
 				socket->WriteAll(frame, timeout, m_terminateEvent);

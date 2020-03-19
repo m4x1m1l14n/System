@@ -92,19 +92,19 @@ namespace System
 			}
 
 
-			IpcMessage_ptr IpcServer::CreateRequest(const std::string& data)
+			IpcMessage_ptr IpcServer::CreateRequest(const std::string& payload)
 			{
 				const auto id = this->GenerateRequestId();
-				const auto request = IpcMessage::CreateServerRequest(id, data);
+				const auto request = IpcMessage::CreateServerRequest(id, payload);
 
 				return request;
 			}
 
 
-			IpcMessage_ptr IpcServer::CreateResponse(const IpcMessage_ptr request, const std::string& data)
+			IpcMessage_ptr IpcServer::CreateResponse(const IpcMessage_ptr request, const std::string& payload)
 			{
 				const auto id = request->Id();
-				const auto response = IpcMessage::CreateServerResponse(id, data);
+				const auto response = IpcMessage::CreateServerResponse(id, payload);
 
 				return response;
 			}
@@ -396,12 +396,10 @@ namespace System
 
 											client->rxBuffer.append(data);
 
-											auto message = IpcMessage::PeekFromBuffer(client->rxBuffer);
+											auto message = this->FetchMessage(client->rxBuffer);
 											if (message)
 											{
-												auto payload = message->Payload();
-
-												this->Invoke_DecryptPayload(payload);
+												auto& payload = message->Payload();
 
 												// Payload during registration contains client-id only
 												if (message->Id() != IpcRegisterMessageId || payload.length() != sizeof(IpcClientId))
@@ -427,7 +425,7 @@ namespace System
 												// Dispatch all received messages
 												while (!client->rxBuffer.empty())
 												{
-													message = IpcMessage::PeekFromBuffer(client->rxBuffer);
+													message = this->FetchMessage(client->rxBuffer);
 													if (message)
 													{
 														this->Invoke_OnMessage(clientId, message);
@@ -623,7 +621,7 @@ namespace System
 
 											do
 											{
-												auto message = IpcMessage::PeekFromBuffer(client->rxBuffer);
+												auto message = this->FetchMessage(client->rxBuffer);
 												if (message)
 												{
 													if (message->IsResponse())
@@ -690,7 +688,12 @@ namespace System
 											assert(!client->txQueue.empty());
 
 											const auto& queueItem = client->txQueue.front();
-											const auto& message = queueItem->Message();
+											
+											auto message = queueItem->Message();
+											
+											auto& payload = message->Payload();
+
+											this->Invoke_EncryptPayload(payload);
 
 											client->txBuffer = message->Frame();
 										}
@@ -899,6 +902,21 @@ namespace System
 					m_requests.clear();
 				}
 			}
+
+
+			IpcMessage_ptr IpcServer::FetchMessage(std::string& buffer)
+			{
+				const auto message = IpcMessage::PeekFromBuffer(buffer);
+				if (message)
+				{
+					auto& payload = message->Payload();
+
+					this->Invoke_DecryptPayload(payload);
+				}
+
+				return message;
+			}
+
 
 			void IpcServer::Invoke_Opened()
 			{

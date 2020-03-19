@@ -35,6 +35,14 @@ namespace ipc = System::Net::IPC;
 
 const int port = 65321;
 
+static void encryptDecryptPayload(std::string& payload)
+{
+	for (auto iter = payload.begin(); iter != payload.end(); ++iter)
+	{
+		*iter ^= 'K';
+	}
+}
+
 class IpcServerTest
 	: public ipc::IpcServerDispatcher
 {
@@ -52,7 +60,7 @@ public:
 
 	virtual void IpcServer_OnMessage(const ipc::IpcClientId clientId, const ipc::IpcMessage_ptr message) override
 	{
-		std::cout << "Client  " << clientId << " said " << message->Payload() << std::endl;
+		std::cout << "Client " << clientId << " said " << message->Payload() << std::endl;
 
 		auto ignore = concurrency::create_task([this, clientId, message]()
 		{
@@ -60,6 +68,20 @@ public:
 
 			m_ipcServer->SendResponse(clientId, response);
 		});
+	}
+
+	virtual void IpcServer_EncryptPayload(std::string& payload) override
+	{
+		//std:: cout << "Server encrypting: " << payload << std::endl;
+
+		encryptDecryptPayload(payload);
+	}
+
+	virtual void IpcServer_DecryptPayload(std::string& payload) override
+	{
+		//std:: cout << "Server decrypting: " << payload << std::endl;
+
+		encryptDecryptPayload(payload);
 	}
 
 private:
@@ -76,6 +98,20 @@ public:
 	{
 		m_ipcClient = std::make_shared<ipc::IpcClient>(port, this);
 		m_ipcClient->Start();
+	}
+
+	virtual void IpcClient_EncryptPayload(std::string& payload) override
+	{
+		//std:: cout << "Client encrypting: " << payload << std::endl;
+
+		encryptDecryptPayload(payload);
+	}
+
+	virtual void IpcClient_DecryptPayload(std::string& payload) override
+	{
+		//std:: cout << "Client decrypting: " << payload << std::endl;
+
+		encryptDecryptPayload(payload);
 	}
 
 	virtual void IpcClient_OnConnected() override

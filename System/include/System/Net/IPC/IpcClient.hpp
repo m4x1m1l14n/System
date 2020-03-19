@@ -38,8 +38,8 @@ namespace System
 				// Getters
 				IpcClientId ClientId() const;
 
-				IpcMessage_ptr CreateRequest(const std::string& data);
-				IpcMessage_ptr CreateResponse(const IpcMessage_ptr request, const std::string& data);
+				IpcMessage_ptr CreateRequest(const std::string& payload);
+				IpcMessage_ptr CreateResponse(const IpcMessage_ptr request, const std::string& payload);
 
 				IpcMessage_ptr SendRequest(const IpcMessage_ptr request);
 				IpcMessage_ptr SendRequest(const IpcMessage_ptr request, const Timeout& timeout);

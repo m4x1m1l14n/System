@@ -53,8 +53,8 @@ namespace System
 
 				int Port() const;
 
-				IpcMessage_ptr CreateRequest(const std::string& data);
-				IpcMessage_ptr CreateResponse(const IpcMessage_ptr request, const std::string& data);
+				IpcMessage_ptr CreateRequest(const std::string& payload);
+				IpcMessage_ptr CreateResponse(const IpcMessage_ptr request, const std::string& payload);
 
 				IpcMessage_ptr SendRequest(const IpcClientId clientId, const IpcMessage_ptr request);
 				IpcMessage_ptr SendRequest(const IpcClientId clientId, const IpcMessage_ptr request, const System::Timeout& timeout);
@@ -75,6 +75,8 @@ namespace System
 
 				void CancelPendingMessages();
 				void CancelPendingRequests();
+
+				IpcMessage_ptr FetchMessage(std::string& buffer);
 
 				void Invoke_Opened();
 				void Invoke_ClientConnected(const IpcClientId clientId);
