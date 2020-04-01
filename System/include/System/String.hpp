@@ -1,10 +1,17 @@
 #pragma once
 
+#ifdef _WIN32
+
+#include <Windows.h>
+
+#endif
+
 #include <string>
 #include <vector>
 #include <sstream>
 #include <algorithm>
 #include <cctype>
+#include <cwctype>
 #include <type_traits>
 
 namespace System
@@ -221,16 +228,43 @@ namespace System
 			return ss.str();
 		}
 
-		template <typename _T>
+		/*template <typename _T>
 		inline std::basic_string<_T>& UpperCase(std::basic_string<_T>& s)
 		{
-			std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::toupper(c); });
+			std::transform(s.begin(), s.end(), s.begin(), [](const _T c) { return static_cast<_T>(std::toupper(c)); });
+
+			return s;
+		}*/
+
+		inline std::string& UpperCase(std::string& s)
+		{
+#ifdef _WIN32
+			CharUpperBuffA(&s[0], static_cast<DWORD>(s.length()));
+#else
+			std::transform(s.begin(), s.end(), s.begin(), [](const unsigned char c)
+			{
+				return static_cast<char>(std::toupper(c));
+			});
+#endif
+			
+			return s;
+		}
+
+		inline std::wstring& UpperCase(std::wstring& s)
+		{
+#ifdef _WIN32
+			CharUpperBuffW(&s[0], static_cast<DWORD>(s.length()));
+#else
+			std::transform(s.begin(), s.end(), s.begin(), [](wchar_t c)
+			{
+				return std::towupper(c);
+			});
+#endif
 
 			return s;
 		}
 
-		template <typename _T>
-		inline std::basic_string<_T> UpperCaseCopy(const std::basic_string<_T>& s)
+		inline std::wstring UpperCaseCopy(const std::wstring& s)
 		{
 			auto copy = s;
 
@@ -239,16 +273,53 @@ namespace System
 			return copy;
 		}
 
-		template <typename _T>
-		inline std::basic_string<_T>& LowerCase(std::basic_string<_T>& s)
+		inline std::string UpperCaseCopy(const std::string& s)
 		{
-			std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::tolower(c); });
+			auto copy = s;
+
+			String::UpperCase(copy);
+
+			return copy;
+		}
+
+		inline std::string& LowerCase(std::string& s)
+		{
+#ifdef _WIN32
+			CharLowerBuffA(&s[0], static_cast<DWORD>(s.length()));
+#else
+			std::transform(s.begin(), s.end(), s.begin(), [](const unsigned char c)
+			{
+				return static_cast<char>(std::tolower(c)); 
+			});
+#endif
 
 			return s;
 		}
 
-		template <typename _T>
-		inline std::basic_string<_T> LowerCaseCopy(const std::basic_string<_T>& s)
+		inline std::wstring& LowerCase(std::wstring& s)
+		{
+#ifdef _WIN32
+			CharLowerBuffW(&s[0], static_cast<DWORD>(s.length()));
+#else
+			std::transform(s.begin(), s.end(), s.begin(), [](const unsigned char c)
+			{
+				return std::towlower(c); 
+			});
+#endif
+
+			return s;
+		}
+
+		inline std::string LowerCaseCopy(const std::string& s)
+		{
+			auto copy = s;
+
+			String::LowerCase(copy);
+
+			return copy;
+		}
+
+		inline std::wstring LowerCaseCopy(const std::wstring& s)
 		{
 			auto copy = s;
 

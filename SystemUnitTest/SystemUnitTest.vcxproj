@@ -28,6 +28,7 @@
     <ClCompile Include="System.Drawing.Point.cpp" />
     <ClCompile Include="System.Drawing.Size.cpp" />
     <ClCompile Include="System.Guid.cpp" />
+    <ClCompile Include="System.String.cpp" />
     <ClCompile Include="System.Version.cpp" />
   </ItemGroup>
   <ItemGroup>

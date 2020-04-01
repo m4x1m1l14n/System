@@ -11,6 +11,7 @@
 #include "CppUnitTest.h"
 #include <Windows.h>
 
+#include <map>
 #include <vector>
 
 #include <System/Guid.hpp>
