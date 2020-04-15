@@ -38,14 +38,7 @@ namespace System
 
 			}
 
-			std::string HttpClient::PostString(const System::Net::Url & url)
-			{
-				auto response = this->Post(url);
-
-				return response.Content().ReadAsString();
-			}
-
-			HttpResponse HttpClient::Post(const System::Net::Url & url)
+			HttpResponse HttpClient::Post(const System::Net::Url & url, const HttpContent& content) const
 			{
 				// TODO How to check if url is secure or not?
 

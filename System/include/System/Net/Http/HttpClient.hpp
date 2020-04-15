@@ -19,7 +19,7 @@ namespace System
 				std::string PostString(const System::Net::Url& url);
 
 				HttpResponse Get(const System::Net::Url& url);
-				HttpResponse Post(const System::Net::Url& url);
+				HttpResponse Post(const System::Net::Url& url, const HttpContent& data) const;
 			};
 		}
 	}

@@ -10,7 +10,7 @@ namespace System
 		{
 		public:
 			Url();
-			Url(const std::string& url);
+			explicit Url(const std::string& url);
 			Url(const std::string& scheme, const std::string& host);
 			Url(int port);
 			Url(const std::string& host, int port);

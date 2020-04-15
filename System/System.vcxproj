@@ -228,6 +228,7 @@
     <ClInclude Include="include\System\Net\Http\HttpMethod.hpp" />
     <ClInclude Include="include\System\Net\Http\HttpRequest.hpp" />
     <ClInclude Include="include\System\Net\Http\HttpResponse.hpp" />
+    <ClInclude Include="include\System\Net\Http\StringContent.hpp" />
     <ClInclude Include="include\System\Net\IPC\IpcClient.hpp" />
     <ClInclude Include="include\System\Net\IPC\IpcClientDispatcher.hpp" />
     <ClInclude Include="include\System\Net\IPC\IpcDefines.hpp" />
