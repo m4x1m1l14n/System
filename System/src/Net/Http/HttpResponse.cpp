@@ -63,7 +63,7 @@ namespace System
 
 				m_statusLine = HttpStatusLine(data.substr(0, pos));
 				m_headers = HttpHeaders(data.substr(pos + HttpHeaders::HeadersSeparator.length(), tail));
-				m_content = HttpContent(data.substr(tail));
+				m_content = HttpContent(data.substr(tail + HttpHeaders::HeadersTerminator.length()));
 			}
 
 			HttpResponse HttpResponse::Parse(const std::string & data)
@@ -86,7 +86,9 @@ namespace System
 
 				try
 				{
-					response = HttpResponse::Parse(data);
+					response = HttpResponse(data);
+
+					success = true;
 				}
 				catch (const std::exception&)
 				{
@@ -201,8 +203,7 @@ namespace System
 			{
 				std::stringstream ss;
 
-				// TODO Version.ToString(2) when std::string
-				ss << m_protocol << "/" << m_version.getMajor() << "." << m_version.getMinor() << " " << static_cast<int>(m_statusCode) << " " << m_statusText;
+				ss << m_protocol << "/" << m_version.ToString(2) << " " << static_cast<int>(m_statusCode) << " " << m_statusText;
 
 				return ss.str();
 			}
