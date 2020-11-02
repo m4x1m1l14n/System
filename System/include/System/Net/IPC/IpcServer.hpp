@@ -40,18 +40,18 @@ namespace System
 			class IpcServer
 			{
 			public:
-				IpcServer(int port, IpcServerDispatcher *pDispatcher);
+				IpcServer(IpcServerDispatcher *pDispatcher);
 
 				/*
 					virtual Dtor that stops IPC server if not stopped explicitly with call to Stop API
 				*/
 				virtual ~IpcServer();
 
-				void Start();
+				void Start(int port);
 
 				void Stop();
 
-				int Port() const;
+				int getPort() const;
 
 				IpcMessage_ptr CreateRequest(const std::string& payload);
 				IpcMessage_ptr CreateResponse(const IpcMessage_ptr request, const std::string& payload);
@@ -65,7 +65,7 @@ namespace System
 			protected:
 				inline IpcMessageId GenerateRequestId();
 
-				void AcceptThread(int port);
+				void AcceptThread(Socket_ptr serverSocket);
 				void WorkerThread();
 
 				void ProcessResponse(const IpcMessage_ptr response);
@@ -87,7 +87,7 @@ namespace System
 				void Invoke_OnError(const std::exception& ex);
 
 			protected:
-				int m_port;
+				Socket_ptr m_serverSocket;
 				ManualResetEvent_ptr m_terminateEvent;
 				IpcServerDispatcher *m_pDispatcher;
 

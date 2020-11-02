@@ -55,7 +55,7 @@ namespace System
 				concurrency::task<void> ConnectAsync(const std::string& host, int port, const ManualResetEvent_ptr terminateEvent);
 				concurrency::task<void> ConnectAsync(const std::string& host, int port, const Timeout& timeout, const ManualResetEvent_ptr terminateEvent);
 
-				void Bind(const std::string& host, int port);
+				void Bind(const std::string& host, int port = 0);
 				void Listen(int backlog);
 
 				Socket_ptr Accept();

@@ -13,7 +13,13 @@ namespace System
 		{
 			namespace details
 			{
-				Socket_ptr CreateServerSocket(int port)
+				/**
+				 * Creates server socket for accepting incoming IPC connections
+				 *
+				 * @param[in] port Port to bind server socket. If 0, random free port is bound.
+				 * @return Server socket
+				 */
+				Socket_ptr CreateServerSocket(int port = 0)
 				{
 					auto serverSocket = std::make_unique<Socket>();
 
@@ -41,9 +47,8 @@ namespace System
 			std::atomic<std::uint32_t> IpcServer::s_messageIdIterator = 1;
 
 
-			IpcServer::IpcServer(int port, IpcServerDispatcher * pDispatcher)
-				: m_port(port)
-				, m_pDispatcher(pDispatcher)
+			IpcServer::IpcServer(IpcServerDispatcher * pDispatcher)
+				: m_pDispatcher(pDispatcher)
 				, m_terminateEvent(std::make_shared<ManualResetEvent>())
 			{
 #if defined(_DEBUG) && 0
@@ -66,13 +71,15 @@ namespace System
 			}
 
 
-			void IpcServer::Start()
+			void IpcServer::Start(int port)
 			{
 				this->Stop();
 
 				m_terminateEvent->Reset();
 
-				m_acceptThread = std::thread(&IpcServer::AcceptThread, this, m_port);
+				m_serverSocket = details::CreateServerSocket(port);
+
+				m_acceptThread = std::thread(&IpcServer::AcceptThread, this, m_serverSocket);
 				m_workerThread = std::thread(&IpcServer::WorkerThread, this);
 			}
 
@@ -86,9 +93,9 @@ namespace System
 			}
 
 
-			int IpcServer::Port() const
+			int IpcServer::getPort() const
 			{
-				return m_port;
+				return m_serverSocket->getPort();
 			}
 
 
@@ -250,7 +257,7 @@ namespace System
 			}
 
 
-			void IpcServer::AcceptThread(int port)
+			void IpcServer::AcceptThread(Socket_ptr serverSocket)
 			{
 #if defined(_WIN32)
 				// NOTE
@@ -270,8 +277,6 @@ namespace System
 				{
 					try
 					{
-						auto serverSocket = details::CreateServerSocket(port);
-
 						auto sock = static_cast<SOCKET>(*serverSocket);
 
 						auto maxfds = static_cast<int>(sock) + 1;

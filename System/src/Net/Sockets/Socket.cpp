@@ -181,7 +181,7 @@ namespace System
 				}
 			}
 
-			void Socket::Bind(const std::string & host, int port)
+			void Socket::Bind(const std::string & host, int port/* = 0*/)
 			{
 				UNREFERENCED_PARAMETER(host);
 
@@ -195,6 +195,29 @@ namespace System
 				{
 					throw SocketException(::WSAGetLastError());
 				}
+
+				// In case default port or port 0 was specified, socket will be bound
+				// to randomly selected free port so we have to optain that port for
+				// later use
+				if (port == 0)
+				{
+					// TODO Move to separate method for clarity and future reuse. eq Socket::GetLocalPort(socket) or so...
+					struct sockaddr_in sin;
+					int addrlen = sizeof(sin);
+
+					err = getsockname(m_socket, (struct sockaddr *)&sin, &addrlen);
+
+					if (err == 0 && sin.sin_family == AF_INET && addrlen == sizeof(sin))
+					{
+						port = ntohs(sin.sin_port);
+					}
+					else
+					{
+						throw SocketException(::WSAGetLastError(), "getsockname() returned " + std::to_string(err));
+					}
+				}
+
+				this->m_port = port;
 			}
 
 			void Socket::Listen(int backlog)

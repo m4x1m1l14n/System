@@ -48,25 +48,11 @@ namespace System
 			IpcClientDefaultDispatcher s_defaultDispatcher;
 
 
-			IpcClient::IpcClient(int port)
-				: IpcClient(std::string(), port, nullptr)
-			{
-
-			}
-
-			IpcClient::IpcClient(int port, IpcClientDispatcher * pDispatcher)
-				: IpcClient(std::string(), port, pDispatcher)
-			{
-
-			}
-
-			IpcClient::IpcClient(const std::string & host, int port, IpcClientDispatcher * pDispatcher)
+			IpcClient::IpcClient(IpcClientDispatcher * pDispatcher)
 				: m_terminateEvent(std::make_shared<ManualResetEvent>())
 				, m_queueChangedEvent(std::make_shared<ManualResetEvent>())
 				, m_writeDoneEvent(std::make_shared<ManualResetEvent>(true))
 				, m_connectedEvent(std::make_shared<ManualResetEvent>())
-				, m_host(host.empty() ? "localhost" : host)
-				, m_port(port)
 			{
 				m_pDispatcher = (pDispatcher != nullptr)
 					? pDispatcher
@@ -204,7 +190,7 @@ namespace System
 				return s_messageIdIterator++;
 			}
 
-			void IpcClient::RxThread(std::string host, int port)
+			void IpcClient::RxThread()
 			{
 				int waitTime = 0;
 
@@ -213,6 +199,12 @@ namespace System
 					try
 					{
 						auto socket = std::make_shared<Socket>();
+
+						// Ask for host in dispatcher class before each connect
+						std::string host;
+						int port;
+
+						m_pDispatcher->IpcClient_GetHost(host, port);
 
 						socket->Connect(host, port);
 
@@ -626,7 +618,7 @@ namespace System
 
 				m_terminateEvent->Reset();
 
-				m_rxThread = std::thread(&IpcClient::RxThread, this, m_host, m_port);
+				m_rxThread = std::thread(&IpcClient::RxThread, this);
 				m_txThread = std::thread(&IpcClient::TxThread, this);
 			}
 

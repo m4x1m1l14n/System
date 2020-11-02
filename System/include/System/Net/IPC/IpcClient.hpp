@@ -26,9 +26,7 @@ namespace System
 			class IpcClient
 			{
 			public:
-				IpcClient(int port);
-				IpcClient(int port, IpcClientDispatcher *pDispatcher);
-				IpcClient(const std::string& host, int port, IpcClientDispatcher *pDispatcher);
+				IpcClient(IpcClientDispatcher *pDispatcher);
 
 				virtual ~IpcClient();
 
@@ -51,7 +49,7 @@ namespace System
 				IpcClientId CreateClientId();
 				inline IpcMessageId GenerateRequestId();
 
-				void RxThread(std::string host, int port);
+				void RxThread();
 				void TxThread();
 
 				void Register(System::Net::Sockets::Socket_ptr socket);
