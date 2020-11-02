@@ -200,44 +200,45 @@ namespace System
 					{
 						auto socket = std::make_shared<Socket>();
 
-						// Ask for host in dispatcher class before each connect
+						// Ask for host:port in dispatcher class before each connect
 						std::string host;
 						int port;
 
-						m_pDispatcher->IpcClient_GetHost(host, port);
-
-						socket->Connect(host, port);
-
-						// Before enabling write & dispatching incoming messages first
-						// register client to server
-						this->Register(socket);
-
-						// Attach connected socket to member variable
-						this->SetSocket(socket);
-
-						// Signal to transmitter thread that writes to socket can be done
-						m_connectedEvent->Set();
-
-						// Signal to dispatcher object, that client was successfully connected
-						this->Invoke_OnConnected();
-
-						// After successfull connect reset reconnect timeout to zero
-						waitTime = 0;
-
-						do
+						if (m_pDispatcher->IpcClient_GetHost(host, port))
 						{
-							auto message = this->ReadMessage();
+							socket->Connect(host, port);
 
-							if (message->IsResponse())
-							{
-								this->ProcessResponse(message);
-							}
-							else
-							{
-								this->Invoke_OnMessage(message);
-							}
+							// Before enabling write & dispatching incoming messages first
+							// register client to server
+							this->Register(socket);
 
-						} while (!m_terminateEvent->IsSet());
+							// Attach connected socket to member variable
+							this->SetSocket(socket);
+
+							// Signal to transmitter thread that writes to socket can be done
+							m_connectedEvent->Set();
+
+							// Signal to dispatcher object, that client was successfully connected
+							this->Invoke_OnConnected();
+
+							// After successfull connect reset reconnect timeout to zero
+							waitTime = 0;
+
+							do
+							{
+								auto message = this->ReadMessage();
+
+								if (message->IsResponse())
+								{
+									this->ProcessResponse(message);
+								}
+								else
+								{
+									this->Invoke_OnMessage(message);
+								}
+
+							} while (!m_terminateEvent->IsSet());
+						}
 					}
 					catch (const System::OperationCanceledException&)
 					{

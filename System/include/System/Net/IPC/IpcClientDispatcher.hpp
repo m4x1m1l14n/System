@@ -18,7 +18,7 @@ namespace System
 				virtual void IpcClient_OnMessage(const IpcMessage_ptr/* message*/) { }
 				virtual void IpcClient_OnDisconnected() { }
 
-				virtual void IpcClient_GetHost(std::string& host, int& port) { }
+				virtual bool IpcClient_GetHost(std::string& host, int& port) { return false; }
 
 				virtual void IpcClient_EncryptPayload(std::string&/* payload*/) { }
 				virtual void IpcClient_DecryptPayload(std::string&/* payload*/) { }
