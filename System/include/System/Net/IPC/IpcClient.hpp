@@ -77,10 +77,6 @@ namespace System
 			private:
 				IpcClientId m_clientId;
 
-				// Replace with Url class
-				std::string m_host;
-				int m_port;
-
 				IpcClientDispatcher* m_pDispatcher;
 
 				ManualResetEvent_ptr m_terminateEvent;

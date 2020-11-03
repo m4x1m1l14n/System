@@ -58,11 +58,6 @@ namespace System
 					? pDispatcher
 					: &s_defaultDispatcher;
 
-				if (m_port == 0)
-				{
-					throw std::invalid_argument("port number must be spcecified");
-				}
-
 				if (pDispatcher == nullptr)
 				{
 					throw std::invalid_argument("dispatcher cannot be null");
