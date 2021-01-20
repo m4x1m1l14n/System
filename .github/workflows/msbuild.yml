@@ -1,6 +1,6 @@
 name: MSBuild
 
-on: [push]
+on: [push, pull_request]
 
 env:
   # Path to the solution file relative to the root of the project.
@@ -27,6 +27,6 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=x64 ${{env.SOLUTION_FILE_PATH}}
     
-    - name: Release x86
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=x86 ${{env.SOLUTION_FILE_PATH}}
+    #- name: Release x86
+    #  working-directory: ${{env.GITHUB_WORKSPACE}}
+    #  run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=x86 ${{env.SOLUTION_FILE_PATH}}
