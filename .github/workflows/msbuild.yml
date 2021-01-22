@@ -1,38 +1,31 @@
 name: MSBuild
-
 on: 
   push:
     branches: [ master, devel ]
     tags-ignore:
       - v*
-
 env:
   # Path to the solution file relative to the root of the project.
   SOLUTION_FILE_PATH: .
-
   # Configuration type to build.
   # You can convert this to a build matrix if you need coverage of multiple configuration types.
   # https://docs.github.com/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
   BUILD_CONFIGURATION: Release
-
 jobs:
   build:
     runs-on: windows-latest
-
     steps:
     - uses: actions/checkout@v2
       with:
         submodules: recursive
-
-    - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
-      with:
-        vs-version: '[16.4,16.5)'
-
+    #- name: Add msbuild to PATH
+    #  uses: microsoft/setup-msbuild@v1.0.2
+    #  with:
+    #    vs-version: '[16.8]'
     - name: Release x64
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=x64 ${{env.SOLUTION_FILE_PATH}}
-    
+      run: |
+        "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\msbuild.exe /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=x64 ${{env.SOLUTION_FILE_PATH}}"
     #- name: Release x86
     #  working-directory: ${{env.GITHUB_WORKSPACE}}
     #  run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=x86 ${{env.SOLUTION_FILE_PATH}}
