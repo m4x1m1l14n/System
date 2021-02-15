@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{E79491B1-D6E8-4DE6-A3B1-27B25C0365FA}</ProjectGuid>
+    <RootNamespace>System</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Configuration)_$(PlatformTarget)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Configuration)_$(PlatformTarget)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Configuration)_$(PlatformTarget)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Configuration)_$(PlatformTarget)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Configuration)_$(PlatformTarget)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Configuration)_$(PlatformTarget)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Configuration)_$(PlatformTarget)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Configuration)_$(PlatformTarget)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)include\;$(ProjectDir)..\3rd\m4x1m1l14n\openssl.git\openssl-1.1.1d-vs2019-MT\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Registry.git\Registry\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Crypto.git\Crypto\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)include\;$(ProjectDir)..\3rd\m4x1m1l14n\openssl.git\openssl-1.1.1d-vs2019-MT\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Registry.git\Registry\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Crypto.git\Crypto\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)include\;$(ProjectDir)..\3rd\m4x1m1l14n\openssl.git\openssl-1.1.1d-vs2019-MT\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Registry.git\Registry\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Crypto.git\Crypto\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)include\;$(ProjectDir)..\3rd\m4x1m1l14n\openssl.git\openssl-1.1.1d-vs2019-MT\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Registry.git\Registry\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Crypto.git\Crypto\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="include\Windows\Mutex.cpp" />
+    <ClCompile Include="src\Application.cpp" />
+    <ClCompile Include="src\Diagnostics\FileVersionInfo.cpp" />
+    <ClCompile Include="src\Diagnostics\Process.cpp" />
+    <ClCompile Include="src\Diagnostics\ServiceManager.cpp" />
+    <ClCompile Include="src\Environment.cpp" />
+    <ClCompile Include="src\Guid.cpp" />
+    <ClCompile Include="src\IO\Directory.cpp" />
+    <ClCompile Include="src\IO\File.cpp" />
+    <ClCompile Include="src\IO\Path.cpp" />
+    <ClCompile Include="src\Math.cpp" />
+    <ClCompile Include="src\Net\Http.cpp" />
+    <ClCompile Include="src\Net\Http\HttpClient.cpp" />
+    <ClCompile Include="src\Net\Http\HttpContent.cpp" />
+    <ClCompile Include="src\Net\Http\HttpHeaders.cpp" />
+    <ClCompile Include="src\Net\Http\HttpMethod.cpp" />
+    <ClCompile Include="src\Net\Http\HttpRequest.cpp" />
+    <ClCompile Include="src\Net\Http\HttpResponse.cpp" />
+    <ClCompile Include="src\Net\IPC\IpcClient.cpp" />
+    <ClCompile Include="src\Net\IPC\IpcServer.cpp" />
+    <ClCompile Include="src\Net\Sockets\Socket.cpp" />
+    <ClCompile Include="src\Net\Sockets\SocketException.cpp" />
+    <ClCompile Include="src\Net\Sockets\TlsSocket.cpp" />
+    <ClCompile Include="src\Net\Url.cpp" />
+    <ClCompile Include="src\Net\WebSockets\WebSocket.cpp" />
+    <ClCompile Include="src\Net\WebSockets\WebSocketException.cpp" />
+    <ClCompile Include="src\NotImplementedException.cpp" />
+    <ClCompile Include="src\OperationCanceledException.cpp" />
+    <ClCompile Include="src\String.cpp" />
+    <ClCompile Include="src\Text\Encoding.cpp" />
+    <ClCompile Include="src\Threading\AutoResetEvent.cpp" />
+    <ClCompile Include="src\Threading\EventWaitHandle.cpp" />
+    <ClCompile Include="src\Threading\ManualResetEvent.cpp" />
+    <ClCompile Include="src\Timeout.cpp" />
+    <ClCompile Include="src\TimeoutException.cpp" />
+    <ClCompile Include="src\TimeSpan.cpp" />
+    <ClCompile Include="src\Version.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\System\Application.hpp" />
+    <ClInclude Include="include\System\Diagnostics\FileVersionInfo.hpp" />
+    <ClInclude Include="include\System\Diagnostics\Process.hpp" />
+    <ClInclude Include="include\System\Diagnostics\ServiceManager.hpp" />
+    <ClInclude Include="include\System\Diagnostics\StopWatch.hpp" />
+    <ClInclude Include="include\System\DirectoryServices\ActiveDirectoryRights.hpp" />
+    <ClInclude Include="include\System\Drawing\Point.hpp" />
+    <ClInclude Include="include\System\Drawing\Rect.hpp" />
+    <ClInclude Include="include\System\Drawing\Size.hpp" />
+    <ClInclude Include="include\System\Environment.hpp" />
+    <ClInclude Include="include\System\Guid.hpp" />
+    <ClInclude Include="include\System\IO\Directory.hpp" />
+    <ClInclude Include="include\System\IO\File.hpp" />
+    <ClInclude Include="include\System\IO\Path.hpp" />
+    <ClInclude Include="include\System\Math.hpp" />
+    <ClInclude Include="include\System\Net\Http.hpp" />
+    <ClInclude Include="include\System\Net\HttpStatusCode.hpp" />
+    <ClInclude Include="include\System\Net\Http\HttpClient.hpp" />
+    <ClInclude Include="include\System\Net\Http\HttpContent.hpp" />
+    <ClInclude Include="include\System\Net\Http\HttpHeaders.hpp" />
+    <ClInclude Include="include\System\Net\Http\HttpMethod.hpp" />
+    <ClInclude Include="include\System\Net\Http\HttpRequest.hpp" />
+    <ClInclude Include="include\System\Net\Http\HttpResponse.hpp" />
+    <ClInclude Include="include\System\Net\Http\StringContent.hpp" />
+    <ClInclude Include="include\System\Net\IPC\IpcClient.hpp" />
+    <ClInclude Include="include\System\Net\IPC\IpcClientDispatcher.hpp" />
+    <ClInclude Include="include\System\Net\IPC\IpcDefines.hpp" />
+    <ClInclude Include="include\System\Net\IPC\IpcMessage.hpp" />
+    <ClInclude Include="include\System\Net\IPC\IpcOptions.hpp" />
+    <ClInclude Include="include\System\Net\IPC\IpcServer.hpp" />
+    <ClInclude Include="include\System\Net\IPC\IpcServerDispatcher.hpp" />
+    <ClInclude Include="include\System\Net\Sockets\AddressFamily.hpp" />
+    <ClInclude Include="include\System\Net\Sockets\ISocket.hpp" />
+    <ClInclude Include="include\System\Net\Sockets\ProtocolType.hpp" />
+    <ClInclude Include="include\System\Net\Sockets\Socket.hpp" />
+    <ClInclude Include="include\System\Net\Sockets\SocketException.hpp" />
+    <ClInclude Include="include\System\Net\Sockets\SocketType.hpp" />
+    <ClInclude Include="include\System\Net\Sockets\TlsSocket.hpp" />
+    <ClInclude Include="include\System\Net\Url.hpp" />
+    <ClInclude Include="include\System\Net\WebException.hpp" />
+    <ClInclude Include="include\System\Net\WebSockets\IWebSocketClientDispatcher.hpp" />
+    <ClInclude Include="include\System\Net\WebSockets\WebSocket.hpp" />
+    <ClInclude Include="include\System\Net\WebSockets\WebSocketClient.hpp" />
+    <ClInclude Include="include\System\Net\WebSockets\WebSocketException.hpp" />
+    <ClInclude Include="include\System\Net\WebSockets\WebSocketOpCode.hpp" />
+    <ClInclude Include="include\System\NotImplementedException.hpp" />
+    <ClInclude Include="include\System\OperationCanceledException.hpp" />
+    <ClInclude Include="include\System\String.hpp" />
+    <ClInclude Include="include\System\Terminable.hpp" />
+    <ClInclude Include="include\System\Text\Encoding.hpp" />
+    <ClInclude Include="include\System\Threading\AutoResetEvent.hpp" />
+    <ClInclude Include="include\System\Threading\EventWaitHandle.hpp" />
+    <ClInclude Include="include\System\Threading\ManualResetEvent.hpp" />
+    <ClInclude Include="include\System\Timeout.hpp" />
+    <ClInclude Include="include\System\TimeoutException.hpp" />
+    <ClInclude Include="include\System\Timers\Timer.hpp" />
+    <ClInclude Include="include\System\TimeSpan.hpp" />
+    <ClInclude Include="include\System\Version.hpp" />
+    <ClInclude Include="include\Windows\Helpers.hpp" />
+    <ClInclude Include="include\Windows\Mutex.hpp" />
+    <ClInclude Include="include\System\Net\IPC\IpcQueueItem.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\Net\IPC\IpcCommon.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="CMakeLists.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

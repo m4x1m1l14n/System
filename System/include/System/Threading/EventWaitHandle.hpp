@@ -5,12 +5,14 @@
 #include <vector>
 #include <memory>
 #include <exception>
+#include <string>
 
 namespace System
 {
 	namespace Threading
 	{
-		enum EventResetMode {
+		enum class EventResetMode
+		{
 			AutoReset,
 			ManualReset
 		};
@@ -23,6 +25,12 @@ namespace System
 		{
 		public:
 			static const int WaitTimeout = WAIT_TIMEOUT;
+
+			template <int N>
+			static constexpr int WaitObject()
+			{
+				return (WAIT_OBJECT_0 + N);
+			}
 
 		public:
 			EventWaitHandle(bool signaled, EventResetMode mode);
