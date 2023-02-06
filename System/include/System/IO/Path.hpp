@@ -12,7 +12,7 @@ namespace System
 		{
 		public:
 			static std::wstring Combine(const std::wstring& path1, const std::wstring& path2);
-			static std::wstring GetDirectoryName(const std::wstring fileName);
+			static std::wstring GetDirectoryName(const std::wstring& path);
 			static std::wstring GetTempDirectoryPath();
 			static std::wstring GetRandomFileName();
 			static std::wstring GetExtension(const std::wstring& path);
