@@ -5,6 +5,9 @@
 
 #include <System/Net/WebSockets/WebSocketException.hpp>
 #include <System/Net/WebSockets/WebSocketOpCode.hpp>
+
+#include <System/Net/Http/HttpRequest.hpp>
+#include <System/Net/Http/HttpResponse.hpp>
 #include <System/Net/Http/HttpHeaders.hpp>
 
 #include <Crypto/Random.hpp>
@@ -42,21 +45,21 @@ namespace System
 
 				const auto& secWebSocketKey = WebSocket::GenerateSecWebsocketKey();
 
-				// TODO Create using http headers class
-				std::stringstream ss;
+				// TODO Pass path as argument!
+				HttpRequest request(HttpMethod::Get, "/client");
 
-				ss
-					<< "GET /chat HTTP/1.1\r\n"
-					<< "Host: " << host << ":" << port << "\r\n"
-					<< "Connection: Upgrade\r\n"
-					<< "Upgrade: websocket\r\n"
-					<< "Sec-WebSocket-Version: 13\r\n"
-					<< "Sec-WebSocket-Key: " << secWebSocketKey << "\r\n"
-					<< "\r\n";
+				request.Headers()
+					.Add("Host", host + ":" + std::to_string(port))
+					.Add("Connection", "Upgrade")
+					.Add("Upgrade", "websocket")
+					.Add("Sec-WebSocket-Version", "13")
+					.Add("Sec-WebSocket-Key", secWebSocketKey)
+					.Add("Xclbr-id", "1234567890")
+					.Add("Xclbr-type", "client");
 
-				const auto& request = ss.str();
+				auto requestData = request.ToString();
 
-				m_socket->Write(request, timeout, terminateEvent);
+				m_socket->Write(requestData, timeout, terminateEvent);
 
 				// TODO Receive full http header until \r\n
 				const auto& response = m_socket->Read();
