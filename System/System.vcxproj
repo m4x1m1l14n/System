@@ -98,6 +98,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)include\;$(ProjectDir)..\3rd\m4x1m1l14n\openssl.git\openssl-1.1.1d-vs2019-MT\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Registry.git\Registry\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Crypto.git\Crypto\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <BuildStlModules>false</BuildStlModules>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -113,6 +114,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)include\;$(ProjectDir)..\3rd\m4x1m1l14n\openssl.git\openssl-1.1.1d-vs2019-MT\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Registry.git\Registry\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Crypto.git\Crypto\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <BuildStlModules>false</BuildStlModules>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,6 +132,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)include\;$(ProjectDir)..\3rd\m4x1m1l14n\openssl.git\openssl-1.1.1d-vs2019-MT\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Registry.git\Registry\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Crypto.git\Crypto\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BuildStlModules>false</BuildStlModules>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -153,6 +156,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)include\;$(ProjectDir)..\3rd\m4x1m1l14n\openssl.git\openssl-1.1.1d-vs2019-MT\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Registry.git\Registry\include\;$(ProjectDir)..\3rd\m4x1m1l14n\Crypto.git\Crypto\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BuildStlModules>false</BuildStlModules>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
