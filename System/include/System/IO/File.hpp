@@ -20,7 +20,7 @@ namespace System
 			static void Delete(const std::wstring& filePath);
 			static bool TryDelete(const std::wstring& filePath);
 			static void DeleteIfExists(const std::wstring& filePath);
-			static bool Copy(const std::wstring& sourceFileName, const std::wstring& destFileName, bool overwrite = false);
+			static void Copy(const std::wstring& sourceFileName, const std::wstring& destFileName, bool overwrite = false);
 			static std::string ReadAllText(const std::wstring& fileName);
 			static bool WriteAllText(const std::wstring& fileName, const std::string& text);
 			static __int64 GetSize(const std::wstring& fileName);

@@ -68,13 +68,20 @@ namespace System
 			}
 		}
 
-		bool File::Copy(const std::wstring& sourceFileName, const std::wstring& destFileName, bool overwrite /*= false*/)
+		void File::Copy(const std::wstring& sourceFileName, const std::wstring& destFileName, bool overwrite /*= false*/)
 		{
-			return (::CopyFile(
-				sourceFileName.c_str(),
-				destFileName.c_str(),
-				overwrite ? FALSE : TRUE
-			) == TRUE) ? true : false;
+			BOOL fFailIfExists = overwrite ? FALSE : TRUE;
+
+			BOOL fResult = ::CopyFile(sourceFileName.c_str(), destFileName.c_str(), fFailIfExists);
+			if (fResult == FALSE)
+			{
+				const auto lastError = ::GetLastError();
+
+				throw std::system_error(
+					std::error_code(lastError, std::system_category()),
+					"CopyFile() returned FALSE"
+				);
+			}
 		}
 
 		std::string File::ReadAllText(const std::wstring & fileName)

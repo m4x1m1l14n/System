@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include <Shlwapi.h>
+#include <stdexcept>
 
 namespace System
 {
@@ -48,18 +49,24 @@ namespace System
 #endif
 		}
 
-		std::wstring Path::GetDirectoryName(const std::wstring fileName)
+		std::wstring Path::GetDirectoryName(const std::wstring& path)
 		{
-			size_t pos = fileName.find_last_of(L"/\\");
-			if (pos != std::wstring::npos)
+			if (path.empty())
 			{
-				if (fileName.length() == pos)
-					return fileName;
-				else
-					return fileName.substr(0, pos + 1);
+				throw std::invalid_argument("'path' cannot be empty!");
 			}
 
-			return L"";
+			std::wstring directory;
+
+			const auto pos = path.find_last_of(L"\\/");
+			if (pos != std::wstring::npos)
+			{
+				directory = (path.length() == pos)
+					? path
+					: path.substr(0, pos + 1);
+			}
+
+			return directory;
 		}
 
 		std::wstring Path::GetExtension(const std::wstring& path)
