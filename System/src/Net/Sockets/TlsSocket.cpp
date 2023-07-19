@@ -1,5 +1,5 @@
 #include <System/Net/Sockets/TlsSocket.hpp>
-
+#include <openssl/err.h>
 #include <assert.h>
 
 namespace System
@@ -46,6 +46,15 @@ namespace System
 					else if (err == SSL_ERROR_SYSCALL)
 					{
 						throw SocketException(::WSAGetLastError(), "socket operation failed");
+					}
+					else if (err == SSL_ERROR_SSL)
+					{
+						// TODO Fill exception with appropriate info
+						char buffer[120];
+
+						ERR_error_string(ERR_get_error(), buffer);
+						
+						throw SocketException(::WSAGetLastError(), std::string(buffer));
 					}
 					else
 					{
